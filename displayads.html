@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT Ad & IMA Video Ad</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <style>
+        /* --- Custom Styles for IMA and GPT Slots --- */
+
+        /* Retain custom color for H1 */
+        h1 {
+            color: #1a428a;
+        }
+
+        /* Styling for the Leaderboard Container */
+        .leaderboard-container {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+            display: inline-block;
+        }
+
+        /* --- Video Ad Styles (IMA) --- */
+
+        /* Container for the video player and ad */
+        #outstream-video-container {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+        }
+
+        /* The container holding the video and ad overlay must be relative */
+        .video-wrapper {
+            position: relative;
+            display: block;
+        }
+
+        /* Style the video element itself to fill the responsive .ratio wrapper */
+        #content_video {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+
+        /* IMA Ad UI element must be absolute to sit over the video */
+        #ad_container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- 300x250 Ad Styles (Side Ads) --- */
+        .display-ad-300x250 {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+            min-width: 300px;
+            min-height: 250px;
+        }
+
+        /* --- 300x600 Ad Style (Slot 02) --- */
+        .display-ad-300x600 {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+            min-width: 300px;
+            min-height: 600px;
+        }
+
+        /* New style for the info text block */
+        .info-text-block {
+            text-align: justify;
+            padding: 5px 0px;
+            /*background-color: #f8f9fa;
+            light gray background
+            border: 1px solid #e9ecef;*/
+            border-radius: 4px;
+            margin-top: 20px;
+            /* Space above */
+        }
+    </style>
+
+    <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
+    <script>
+        window.googletag = window.googletag || { cmd: [] };
+        // **MODIFICATION 1: Define a global variable to store the 300x600 slot object**
+        let slot300x600;
+
+        googletag.cmd.push(function () {
+            // Define Ad Unit Paths
+            const adUnitPath1 = '/137679306/db254360';
+            const adUnitPath250 = '/137679306/300x250';
+            const adUnitPath600 = '/137679306/2c7e98f8';
+
+            // Define Ad Sizes
+            const size728 = [728, 90];
+            const size250 = [300, 250];
+            const size600 = [300, 600];
+
+            // Set Page-Level Custom Targeting for Display Ads
+            // googletag.pubads().setTargeting('age', '18-28');
+            // googletag.pubads().setTargeting('channel_name', 'hbo');
+
+            // Define Ad Slot 1 (Leaderboard: 728x90)
+            googletag.defineSlot(adUnitPath1, size728, 'div-gpt-ad-slot-01')
+                .addService(googletag.pubads());
+
+            // **MODIFICATION 2: Assign the 300x600 slot object to the variable**
+            // Define Ad Slot 2 (Side Ad Left: 300x600 - Skyscraper)
+            slot300x600 = googletag.defineSlot(adUnitPath600, size600, 'div-gpt-ad-slot-02')
+                .addService(googletag.pubads());
+
+            // Define Ad Slot 3 (Side Ad Right: 300x250 - MREC - Top)
+            googletag.defineSlot(adUnitPath250, size250, 'div-gpt-ad-slot-03')
+                .addService(googletag.pubads());
+
+            // Define Ad Slot 4 (Side Ad Right: 300x250 - MREC - Bottom)
+            googletag.defineSlot(adUnitPath250, size250, 'div-gpt-ad-slot-04')
+                .addService(googletag.pubads());
+
+            googletag.pubads().enableSingleRequest();
+            googletag.enableServices();
+        });
+    </script>
+
+    <script async src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+</head>
+
+<body class="p-3">
+
+    <div class="container-fluid text-center">
+
+        <h1 class="mt-0 mb-3">Display Ads and Outstream Video Ad</h1>
+
+        <div id="leaderboard-ads-group" class="d-flex justify-content-center mb-4">
+            <div class="leaderboard-container">
+                <h2 class="fs-6 text-muted mb-2">Leaderboard Ad (728x90)</h2>
+                <div id='div-gpt-ad-slot-01' style='min-width: 728px; min-height: 90px;'>
+                    <script>
+                        googletag.cmd.push(function () {
+                            googletag.display('div-gpt-ad-slot-01');
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+
+        <div id="video-and-display-wrapper" class="row justify-content-center align-items-start gx-4">
+
+            <div class="col-auto">
+                <div class="display-ad-300x600">
+                    <h2 class="fs-6 text-muted mb-1">Display Ad (300x600 - Skyscraper)</h2>
+                    <div id='div-gpt-ad-slot-02' style='min-width: 300px; min-height: 600px;'>
+                        <script>
+                            googletag.cmd.push(function () {
+                                googletag.display('div-gpt-ad-slot-02');
+                            });
+                        </script>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-6 col-xxl-5">
+                <div class="info-text-block mt-0">
+                    <p>
+                        Magnite is the world's largest independent sell-side advertising platform (SSP), providing
+                        technology for digital publishers (like CTV, video, web) to sell their ad space (inventory) to
+                        advertisers, enabling automated transactions (programmatic) across all screens, focusing on
+                        quality, privacy, and performance for both sellers (publishers) and buyers (brands/agencies).
+                    </p>
+                </div>
+
+                <div id="outstream-video-container">
+                    <h2 class="fs-6 text-muted mb-1">Outstream Video From SpringServe Ad Server</h2>
+
+                    <div class="ratio ratio-16x9 video-wrapper">
+
+                        <video id="content_video" muted playsinline>
+                            <source src="https://storage.googleapis.com/gvmp/videos/google_io_sample.mp4"
+                                type="video/mp4">
+                            <p>Your browser does not support HTML5 video.</p>
+                        </video>
+
+                        <div id="ad_container"></div>
+                    </div>
+
+                    <button id="mute-unmute-button" class="btn btn-outline-primary mt-1 d-block mx-auto"
+                        onclick="toggleMute()">Unmute Audio</button>
+
+                </div>
+
+                <div class="info-text-block mt-2">
+                    <p>
+                        SpringServe (now part of Magnite) is a leading, independent video ad server platform
+                        specializing in Connected TV (CTV), OTT, and streaming video, offering publishers and content
+                        owners tools to manage, optimize, and automate video ad delivery, yield, and performance through
+                        advanced features like video header bidding, real-time analytics, and unified auctions for
+                        seamless monetization across devices.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-auto d-flex flex-column">
+
+                <div class="display-ad-300x250 mb-4">
+                    <h2 class="fs-6 text-muted mb-1">Display Ad (300x250 - Top)</h2>
+                    <div id='div-gpt-ad-slot-03' style='min-width: 300px; min-height: 250px;'>
+                        <script>
+                            googletag.cmd.push(function () {
+                                googletag.display('div-gpt-ad-slot-03');
+                            });
+                        </script>
+                    </div>
+                </div>
+
+                <div class="display-ad-300x250">
+                    <h2 class="fs-6 text-muted mb-1">Display Ad (300x250 - Bottom)</h2>
+                    <div id='div-gpt-ad-slot-04' style='min-width: 300px; min-height: 250px;'>
+                        <script>
+                            googletag.cmd.push(function () {
+                                googletag.display('div-gpt-ad-slot-04');
+                            });
+                        </script>
+                        </script>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+    <script>
+        const ROTATION_INTERVAL_MS = 30000; // 30 seconds
+
+        function rotateAdSlot300x600() {
+            // Ensure GPT is loaded and the slot object exists
+            if (window.googletag && googletag.pubads && slot300x600) {
+                console.log('Refreshing 300x600 ad slot (div-gpt-ad-slot-02)...');
+
+                // Use pubads().refresh() and pass the specific slot object
+                googletag.pubads().refresh([slot300x600]);
+            } else {
+                console.log('GPT or slot object not ready for refresh.');
+            }
+        }
+
+        // Start the rotation timer once the document is loaded
+        window.addEventListener('load', () => {
+            // Use setInterval to call the refresh function
+            setInterval(rotateAdSlot300x600, ROTATION_INTERVAL_MS);
+        });
+    </script>
+
+    <script>
+        // Global variables for IMA SDK
+        var adDisplayContainer;
+        var adsLoader;
+        var adsManager;
+        var videoContent = document.getElementById('content_video');
+        var muteButton = document.getElementById('mute-unmute-button');
+        var adContainerDiv = document.getElementById('ad_container'); // Reference to the ad container for measuring size
+
+        const VAST_AD_TAG_BASE_URL = "https://tv.springserve.com/rt/46705?w=1920&h=1080&pod_ad_slots=10&pod_max_dur=300";
+        // CRITICAL: Updated AD_WIDTH and AD_HEIGHT to 640x360 for IMA SDK initialization
+        const AD_WIDTH = 640;
+        const AD_HEIGHT = 360;
+
+        // State tracking to know if an ad is currently playing
+        var isAdPlaying = false;
+
+        // --- Audio Mute/Unmute Toggle Function ---
+        function toggleMute() {
+            let willBeMuted;
+
+            if (isAdPlaying && adsManager) {
+                const isCurrentlyMuted = adsManager.getVolume() === 0;
+                const newVolume = isCurrentlyMuted ? 1 : 0;
+                adsManager.setVolume(newVolume);
+
+                willBeMuted = !isCurrentlyMuted;
+                videoContent.muted = willBeMuted;
+
+            } else {
+                videoContent.muted = !videoContent.muted;
+                willBeMuted = videoContent.muted;
+            }
+
+            updateMuteButtonText(willBeMuted);
+        }
+
+        function updateMuteButtonText(isMuted) {
+            muteButton.textContent = isMuted ? 'Unmute Audio' : 'Mute Audio';
+        }
+
+        // --- IMA Core Initialization ---
+        function initializeIMA() {
+            adDisplayContainer = new google.ima.AdDisplayContainer(
+                adContainerDiv,
+                videoContent
+            );
+            adDisplayContainer.initialize();
+
+            adsLoader = new google.ima.AdsLoader(adDisplayContainer);
+            adsLoader.addEventListener(
+                google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
+                onAdsManagerLoaded,
+                false
+            );
+            adsLoader.addEventListener(
+                google.ima.AdErrorEvent.Type.AD_ERROR,
+                onAdError,
+                false
+            );
+
+            // CRITICAL: Add the listener for window resizing to update the IMA SDK
+            window.addEventListener('resize', onWindowResize);
+
+            loadAds();
+        }
+
+        function loadAds() {
+            var adsRequest = new google.ima.AdsRequest();
+
+            const cacheBuster = Date.now();
+            const dynamicAdTagUrl = VAST_AD_TAG_BASE_URL + '&cb=' + cacheBuster;
+
+            adsRequest.adTagUrl = dynamicAdTagUrl;
+
+            // Use the new fixed sizes for the initial request
+            adsRequest.linearAdSlotWidth = AD_WIDTH;
+            adsRequest.linearAdSlotHeight = AD_HEIGHT;
+
+            adsRequest.setAdWillPlayMuted(true);
+
+            adsLoader.requestAds(adsRequest);
+            console.log('IMA Request Tag (with Cache-Buster):', dynamicAdTagUrl);
+        }
+
+        function onAdsManagerLoaded(adsManagerLoadedEvent) {
+            // CRITICAL: Retrieve CURRENT width and height of the responsive container for init
+            const currentWidth = adContainerDiv.offsetWidth;
+            const currentHeight = adContainerDiv.offsetHeight;
+
+            adsManager = adsManagerLoadedEvent.getAdsManager(videoContent);
+
+            adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, onAdError);
+
+            // --- AD EVENT LISTENERS ---
+            adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_PAUSE_REQUESTED, onContentPauseRequested);
+            adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED, onContentResumeRequested);
+
+            adsManager.addEventListener(google.ima.AdEvent.Type.STARTED, function () {
+                isAdPlaying = true;
+                updateMuteButtonText(adsManager.getVolume() === 0);
+            });
+            adsManager.addEventListener(google.ima.AdEvent.Type.ENDED, function () {
+                isAdPlaying = false;
+                updateMuteButtonText(videoContent.muted);
+            });
+
+            adsManager.addEventListener(google.ima.AdEvent.Type.VOLUME_CHANGED, function (adEvent) {
+                const isMuted = adEvent.getVolume() === 0;
+                updateMuteButtonText(isMuted);
+                videoContent.muted = isMuted;
+            });
+            // --- END AD EVENT LISTENERS ---
+
+
+            try {
+                // CRITICAL: Use current size for initialization
+                adsManager.init(currentWidth, currentHeight, google.ima.ViewMode.NORMAL);
+                adsManager.start();
+
+            } catch (adError) {
+                console.error('AdsManager init error:', adError);
+                // Fallback
+                videoContent.muted = true;
+                updateMuteButtonText(true);
+                videoContent.play();
+            }
+        }
+
+        // --- Resize Handler for Responsive Ads ---
+        function onWindowResize() {
+            if (adsManager) {
+                const newWidth = adContainerDiv.offsetWidth;
+                const newHeight = adContainerDiv.offsetHeight;
+
+                // CRITICAL: Call the IMA SDK resize method with the new dimensions
+                adsManager.resize(newWidth, newHeight, google.ima.ViewMode.NORMAL);
+            }
+        }
+        // --- End Resize Handler ---
+
+
+        // --- Ad Event Handlers ---
+        function onAdError(adErrorEvent) {
+            console.error('Ad Error:', adErrorEvent.getError());
+            if (adsManager) {
+                adsManager.destroy();
+                // Clean up listener on error
+                window.removeEventListener('resize', onWindowResize);
+            }
+            // Fallback
+            videoContent.muted = true;
+            updateMuteButtonText(true);
+            isAdPlaying = false;
+            videoContent.play();
+        }
+
+        function onContentPauseRequested() {
+            videoContent.pause();
+        }
+
+        function onContentResumeRequested() {
+            videoContent.play();
+        }
+
+        // --- SDK Load Check ---
+        if (typeof google !== 'undefined' && google.ima) {
+            initializeIMA();
+        } else {
+            window.addEventListener('load', function () {
+                if (typeof google !== 'undefined' && google.ima) {
+                    initializeIMA();
+                } else {
+                    console.error('IMA SDK failed to load.');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
