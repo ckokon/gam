@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Native Ad Display Page</title>
+    
+    <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js" crossorigin="anonymous"></script>
+    <script>
+      window.googletag = window.googletag || {cmd: []};
+      googletag.cmd.push(function() {   
+        googletag.setConfig({singleRequest: true});
+        // Change 'fluid' to a specific size like [300, 250] if your ad unit requires it.
+        googletag.defineSlot('/137679306/648AFCD6', 'fluid', 'div-gpt-ad-1781753134035-0').addService(googletag.pubads());
+        googletag.enableServices();
+      });
+    </script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f5f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .article-content {
+            margin-bottom: 24px;
+        }
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-top: 0;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+        }
+        /* Container styling to seamlessly integrate the native ad */
+        .ad-container {
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+            margin: 20px 0;
+            min-height: 50px; /* Prevents layout shift before ad loads */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="article-content">
+        <h1>Welcome to the Ad Preview Page</h1>
+        <p>Below is a placeholder area representing where your native advertisement will render. Native ads match the visual design of the user experience they live within.</p>
+    </div>
+
+    <div class="ad-container">
+        <div id='div-gpt-ad-1781753134035-0'>
+          <script>
+            googletag.cmd.push(function() { googletag.display('div-gpt-ad-1781753134035-0'); });
+          </script>
+        </div>
+    </div>
+    <div class="article-content">
+        <p>Keep in mind that if this ad unit is live and targeted correctly in your Google Ad Manager (GAM) dashboard, the ad content will populate above dynamically.</p>
+    </div>
+</div>
+
+</body>
+</html>
