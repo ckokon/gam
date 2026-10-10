@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpringServe Tiles & Video Ads</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <style>
+        /* --- Custom Styles for IMA and Ad Slots --- */
+
+        h1 {
+            color: #1a428a;
+        }
+
+        /* Styling for the Leaderboard Container */
+        .leaderboard-container {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+            display: inline-block;
+        }
+
+        /* --- Video Ad Styles (IMA) --- */
+        #outstream-video-container {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .video-wrapper {
+            position: relative;
+            display: block;
+        }
+
+        #content_video {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+
+        #ad_container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- Display Ad Styles (Native JSON Containers) --- */
+        .display-ad-300x250 {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+            min-width: 300px;
+            min-height: 250px;
+        }
+
+        .display-ad-300x600 {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+            min-width: 300px;
+            min-height: 600px;
+        }
+
+        /* Style for the link/image wrapper to fill the container */
+        .native-ad-link {
+            display: block;
+        }
+
+        .native-ad-link img {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .ad-status {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .info-text-block {
+            text-align: justify;
+            padding: 5px 0px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        /* --- MODIFIED CSS FOR FORM WIDTH (1300px Centered) --- */
+        #ad-tag-form {
+            max-width: 1360px;
+            width: 100%;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            border-radius: 0.25rem;
+        }
+    </style>
+
+    <script async src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+</head>
+
+<body class="p-3">
+
+    <div class="container-fluid text-center">
+
+        <h1 class="mt-0 mb-3">SpringServe Tiles Ads and Outstream Video Ad</h1>
+
+        <form id="ad-tag-form" onsubmit="event.preventDefault(); startAdLoading();" class="p-3 mb-4 shadow-sm"
+            style="text-align: left;">
+
+            <div class="mb-2">
+                <label for="video-url" class="form-label mt-0">1. Outstream Video Ad</label>
+                <div class="input-group">
+                    <input type="url" id="video-url" class="form-control form-control-sm"
+                        value="https://tv.springserve.com/vast/764901?w=1920&h=1080&pod_ad_slots=10&pod_max_dur=300"
+                        required>
+                    <button type="button" class="btn btn-sm btn-success" onclick="loadAd('VIDEO')">Load</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-2">
+                        <label for="leaderboard-url" class="form-label">2. Tiles Ad (Leaderboard 728x90)</label>
+                        <div class="input-group">
+                            <input type="url" id="leaderboard-url" class="form-control form-control-sm"
+                                value="https://tiles.springserve.com/nvr/21133?w=728&h=90&content_keywords=icm"
+                                required>
+                            <button type="button" class="btn btn-sm btn-success"
+                                onclick="loadAd('LEADERBOARD')">Load</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="layer1-url" class="form-label">3. Tiles Ad (Skyscraper 300x600 - Left)</label>
+                        <div class="input-group">
+                            <input type="url" id="layer1-url" class="form-control form-control-sm"
+                                value="https://tiles.springserve.com/nvr/21133?w=300&h=600&content_keywords=shopee"
+                                required>
+                            <button type="button" class="btn btn-sm btn-success"
+                                onclick="loadAd('LAYER1')">Load</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-2">
+                        <label for="layer2-url" class="form-label">4. Tiles Ad (MREC 300x250 - Top Right)</label>
+                        <div class="input-group">
+                            <input type="url" id="layer2-url" class="form-control form-control-sm"
+                                value="https://tiles.springserve.com/nvr/21133?w=300&h=250&content_keywords=sc"
+                                required>
+                            <button type="button" class="btn btn-sm btn-success"
+                                onclick="loadAd('LAYER2')">Load</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="layer3-url" class="form-label">5. Tiles Ad (MREC 300x250 - Bottom Right)</label>
+                        <div class="input-group">
+                            <input type="url" id="layer3-url" class="form-control form-control-sm"
+                                value="https://tiles.springserve.com/nvr/21133?w=300&h=250&content_keywords=senso"
+                                required>
+                            <button type="button" class="btn btn-sm btn-success"
+                                onclick="loadAd('LAYER3')">Load</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-2"></div>
+                </div>
+            </div>
+
+            <button id="load-all-button" type="submit" class="btn btn-primary w-100 mt-4 py-2">Load ALL Ads (Tiles &
+                Video)</button>
+        </form>
+        <div id="leaderboard-ads-group" class="d-flex justify-content-center mb-4">
+            <div class="leaderboard-container">
+                <h2 class="fs-6 text-muted mb-2">Leaderboard Ad (728x90)</h2>
+                <div id='nativeAdContainerLeaderboard' style='min-width: 728px; min-height: 90px;'>
+                    <p class="ad-status">Click Load ALL Ads</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="video-and-display-wrapper" class="row justify-content-center align-items-start gx-4">
+
+            <div class="col-auto">
+                <div class="display-ad-300x600">
+                    <h2 class="fs-6 text-muted mb-1">Display Ad (300x600 - Skyscraper)</h2>
+                    <div id='nativeAdContainerLayer1' style='min-width: 300px; min-height: 600px;'>
+                        <p class="ad-status">Click Load ALL Ads</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-6 col-xxl-5">
+                <div class="info-text-block mt-0">
+                    <p>SpringServe, now part of Magnite, is a leading independent video ad server platform specializing
+                        in OTT (Over-the-Top), CTV (Connected TV), and streaming video. It provides tools for publishers
+                        to manage, optimize, and serve video ads across devices.</p>
+                    <p>SpringServe Tiles is a feature that lets publishers create flexible, native-style ad units (like
+                        interactive blocks or recommendation cards) for Connected TV (CTV) home screens and apps,
+                        serving
+                        static images as creative content.</p>
+                </div>
+
+                <div id="outstream-video-container">
+                    <h2 class="fs-6 text-muted mb-1">Outstream Video Ad From SpringServe Ad Server</h2>
+
+                    <div class="ratio ratio-16x9 video-wrapper">
+
+                        <video id="content_video" muted playsinline>
+                            <source src="https://storage.googleapis.com/gvmp/videos/google_io_sample.mp4"
+                                type="video/mp4">
+                            <p>Your browser does not support HTML5 video.</p>
+                        </video>
+
+                        <div id="ad_container"></div>
+                    </div>
+
+                    <button id="mute-unmute-button" class="btn btn-outline-primary mt-1 d-block mx-auto"
+                        onclick="toggleMute()">Unmute Audio</button>
+
+                </div>
+
+                <div class="info-text-block mt-2">
+                    <p><strong>Key Aspects of SpringServe Tiles:</strong></p>
+                    <ul class="text-start">
+                        <li><strong>Native Ad Format:</strong> Built on IAB's native ad specs.</li>
+                        <li><strong>CTV Focus:</strong> Designed for content discovery on smart TVs.</li>
+                        <li><strong>Non-Intrusive:</strong> Integrated into the user's navigation.</li>
+                        <li><strong>Static Images:</strong> Primarily uses static images for creative content.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-auto d-flex flex-column">
+
+                <div class="display-ad-300x250 mb-4">
+                    <h2 class="fs-6 text-muted mb-1">Display Ad (300x250 - Top Right)</h2>
+                    <div id='nativeAdContainerLayer2' style='min-width: 300px; min-height: 250px;'>
+                        <p class="ad-status">Click Load ALL Ads</p>
+                    </div>
+                </div>
+
+                <div class="display-ad-300x250">
+                    <h2 class="fs-6 text-muted mb-1">Display Ad (300x250 - Bottom Right)</h2>
+                    <div id='nativeAdContainerLayer3' style='min-width: 300px; min-height: 250px;'>
+                        <p class="ad-status">Click Load ALL Ads</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+    <script>
+        // Global variables for IMA SDK and Ad Tags
+        var adDisplayContainer;
+        var adsLoader;
+        var adsManager;
+        var videoContent = document.getElementById('content_video');
+        var muteButton = document.getElementById('mute-unmute-button');
+        var adContainerDiv = document.getElementById('ad_container');
+
+        // Global variables for IMA
+        const AD_WIDTH = 640;
+        const AD_HEIGHT = 360;
+        var isAdPlaying = false;
+
+
+        // --- AD TAG RETRIEVAL & LOOKUP ---
+        const AD_SLOTS = {
+            'VIDEO': { urlId: 'video-url', loadFn: initializeIMA, isTile: false },
+            'LEADERBOARD': { urlId: 'leaderboard-url', container: null, width: 728, height: 90, isTile: true },
+            'LAYER1': { urlId: 'layer1-url', container: null, width: 300, height: 600, isTile: true },
+            'LAYER2': { urlId: 'layer2-url', container: null, width: 300, height: 250, isTile: true },
+            'LAYER3': { urlId: 'layer3-url', container: null, width: 300, height: 250, isTile: true }
+        };
+
+        function getAdTags() {
+            const tags = {};
+            for (const key in AD_SLOTS) {
+                tags[key] = document.getElementById(AD_SLOTS[key].urlId).value;
+            }
+            return tags;
+        }
+
+        // --- NATIVE AD CODE ---
+        function appendCacheBuster(url) {
+            const cacheBuster = Date.now();
+            return url + '&cb=' + cacheBuster;
+        }
+
+        function fireClickTrackers(clickTrackers) {
+            if (!clickTrackers || clickTrackers.length === 0) return;
+            console.log(`Firing ${clickTrackers.length} click trackers.`);
+            clickTrackers.forEach(url => {
+                if (url && url.startsWith('http')) {
+                    const img = new Image();
+                    img.src = url;
+                }
+            });
+        }
+
+        async function loadNativeTile(adTagUrl, nativeContainer, targetWidth, targetHeight) {
+            nativeContainer.innerHTML = `<p class="ad-status">Requesting Tile Ad...</p>`;
+            try {
+                const urlWithBuster = appendCacheBuster(adTagUrl);
+                const response = await fetch(urlWithBuster);
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                const data = await response.json();
+
+                // CRITICAL: SpringServe Native uses 'adm' field to deliver the IAB Native JSON
+                const adm = JSON.parse(data?.seatbid?.[0]?.bid?.[0]?.adm || "{}");
+                if (!adm.native) throw new Error("Native object missing in ADM.");
+
+                const imgUrl = adm.native.assets?.[0]?.img?.url;
+                const clickUrl = adm.native.link?.url;
+                const clickTrackers = adm.native.link?.clicktrackers || [];
+                if (!imgUrl) throw new Error("No image URL in bid response.");
+
+                const img = document.createElement("img");
+                img.src = imgUrl;
+                img.alt = "Advertisement";
+                img.style.width = `${targetWidth}px`;
+                img.style.height = `${targetHeight}px`;
+
+                const link = document.createElement("a");
+                link.href = clickUrl || '#';
+                link.target = "_blank";
+                link.classList.add("native-ad-link");
+
+                if (clickTrackers.length > 0) {
+                    link.addEventListener('click', (event) => {
+                        fireClickTrackers(clickTrackers);
+                        if (link.href.endsWith('#')) {
+                            event.preventDefault();
+                        }
+                    });
+                }
+                link.appendChild(img);
+                nativeContainer.innerHTML = "";
+                nativeContainer.appendChild(link);
+
+                // Fire Impression Tracker
+                fetch(adm.native.imptrackers?.[0] || 'INVALID_URL').catch(() => { });
+
+                console.log(`Tile loaded successfully into ${nativeContainer.id}`);
+            } catch (err) {
+                console.error("Native Ad Load Error:", nativeContainer.id, err);
+                nativeContainer.innerHTML = `<p class="ad-status" style="color: red;">Ad Failed to Load</p>`;
+            }
+        }
+
+        // --- AD LOADING LOGIC ---
+        function loadAd(adType) {
+            if (!document.getElementById('ad-tag-form').checkValidity()) {
+                alert('Please ensure all ad tag URLs are valid before loading.');
+                return;
+            }
+
+            const tags = getAdTags();
+            const slot = AD_SLOTS[adType];
+
+            if (slot.isTile) {
+                // Handle Native Tile Load
+                loadNativeTile(
+                    tags[adType],
+                    slot.container,
+                    slot.width,
+                    slot.height
+                );
+            } else if (adType === 'VIDEO') {
+                // Handle Video Load
+                if (adsManager) {
+                    adsManager.destroy();
+                    window.removeEventListener('resize', onWindowResize);
+                }
+                slot.loadFn(tags[adType]); // Calls initializeIMA and passes the tag
+            }
+        }
+
+        function startAdLoading() {
+            if (!document.getElementById('ad-tag-form').checkValidity()) {
+                alert('Please ensure all ad tag URLs are valid before loading all ads.');
+                return;
+            }
+
+            const tags = getAdTags();
+
+            // 1. Load all Native Tiles
+            for (const key in AD_SLOTS) {
+                const slot = AD_SLOTS[key];
+                if (slot.isTile) {
+                    loadNativeTile(tags[key], slot.container, slot.width, slot.height);
+                }
+            }
+
+            // 2. Load the IMA Video Ad
+            const videoSlot = AD_SLOTS['VIDEO'];
+            if (adsManager) {
+                adsManager.destroy();
+                window.removeEventListener('resize', onWindowResize);
+            }
+            videoSlot.loadFn(tags['VIDEO']);
+        }
+
+
+        // --- IMA SDK LOGIC ---
+
+        function toggleMute() {
+            let willBeMuted;
+
+            if (isAdPlaying && adsManager) {
+                const isCurrentlyMuted = adsManager.getVolume() === 0;
+                const newVolume = isCurrentlyMuted ? 1 : 0;
+                adsManager.setVolume(newVolume);
+
+                willBeMuted = !isCurrentlyMuted;
+                videoContent.muted = willBeMuted;
+
+            } else {
+                videoContent.muted = !videoContent.muted;
+                willBeMuted = videoContent.muted;
+            }
+
+            updateMuteButtonText(willBeMuted);
+        }
+
+        function updateMuteButtonText(isMuted) {
+            muteButton.textContent = isMuted ? 'Unmute Audio' : 'Mute Audio';
+        }
+
+        function initializeIMA(adTagUrl) {
+            adDisplayContainer = new google.ima.AdDisplayContainer(
+                adContainerDiv,
+                videoContent
+            );
+            adDisplayContainer.initialize();
+
+            adsLoader = new google.ima.AdsLoader(adDisplayContainer);
+            adsLoader.addEventListener(
+                google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
+                onAdsManagerLoaded,
+                false
+            );
+            adsLoader.addEventListener(
+                google.ima.AdErrorEvent.Type.AD_ERROR,
+                onAdError,
+                false
+            );
+
+            window.addEventListener('resize', onWindowResize);
+
+            loadAds(adTagUrl);
+        }
+
+        function loadAds(adTagUrl) {
+            var adsRequest = new google.ima.AdsRequest();
+
+            const dynamicAdTagUrl = appendCacheBuster(adTagUrl);
+
+            adsRequest.adTagUrl = dynamicAdTagUrl;
+
+            adsRequest.linearAdSlotWidth = AD_WIDTH;
+            adsRequest.linearAdSlotHeight = AD_HEIGHT;
+
+            adsRequest.setAdWillPlayMuted(true);
+
+            adsLoader.requestAds(adsRequest);
+            console.log('IMA Request Tag (with Cache-Buster):', dynamicAdTagUrl);
+        }
+
+        function onAdsManagerLoaded(adsManagerLoadedEvent) {
+            const currentWidth = adContainerDiv.offsetWidth;
+            const currentHeight = adContainerDiv.offsetHeight;
+            adsManager = adsManagerLoadedEvent.getAdsManager(videoContent);
+            adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, onAdError);
+            adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_PAUSE_REQUESTED, onContentPauseRequested);
+            adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED, onContentResumeRequested);
+            adsManager.addEventListener(google.ima.AdEvent.Type.STARTED, function () {
+                isAdPlaying = true;
+                updateMuteButtonText(adsManager.getVolume() === 0);
+            });
+            adsManager.addEventListener(google.ima.AdEvent.Type.ENDED, function () {
+                isAdPlaying = false;
+                updateMuteButtonText(videoContent.muted);
+            });
+            adsManager.addEventListener(google.ima.AdEvent.Type.VOLUME_CHANGED, function (adEvent) {
+                const isMuted = adEvent.getVolume() === 0;
+                updateMuteButtonText(isMuted);
+                videoContent.muted = isMuted;
+            });
+            try {
+                adsManager.init(currentWidth, currentHeight, google.ima.ViewMode.NORMAL);
+                adsManager.start();
+            } catch (adError) {
+                console.error('AdsManager init error:', adError);
+                videoContent.muted = true;
+                updateMuteButtonText(true);
+                videoContent.play();
+            }
+        }
+        function onWindowResize() {
+            if (adsManager) {
+                const newWidth = adContainerDiv.offsetWidth;
+                const newHeight = adContainerDiv.offsetHeight;
+                adsManager.resize(newWidth, newHeight, google.ima.ViewMode.NORMAL);
+            }
+        }
+        function onAdError(adErrorEvent) {
+            console.error('Ad Error:', adErrorEvent.getError());
+            if (adsManager) {
+                adsManager.destroy();
+                window.removeEventListener('resize', onWindowResize);
+            }
+            videoContent.muted = true;
+            updateMuteButtonText(true);
+            isAdPlaying = false;
+            videoContent.play();
+        }
+        function onContentPauseRequested() {
+            videoContent.pause();
+        }
+        function onContentResumeRequested() {
+            videoContent.play();
+        }
+
+
+        // --- DOM Initialization (Configured for NO automatic loading) ---
+        document.addEventListener('DOMContentLoaded', function () {
+            // CRITICAL: Initialize container references after the DOM is ready
+            // The ad content itself is NOT loaded here; it waits for user interaction.
+            AD_SLOTS.LEADERBOARD.container = document.getElementById("nativeAdContainerLeaderboard");
+            AD_SLOTS.LAYER1.container = document.getElementById("nativeAdContainerLayer1");
+            AD_SLOTS.LAYER2.container = document.getElementById("nativeAdContainerLayer2");
+            AD_SLOTS.LAYER3.container = document.getElementById("nativeAdContainerLayer3");
+        });
+
+    </script>
+</body>
+
+</html>
