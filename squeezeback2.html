@@ -2,231 +2,424 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SpringServe Tiles Ads</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpringServe Tiles Ads</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <style>
-        #content {
-            width: 1280px;
-            height: 720px;
-            margin: 0 auto;
-        }
+  <style>
+    #content {
+      width: 1280px;
+      height: 720px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
 
-        #content .position-absolute {
-            z-index: 1;
-        }
+    #content .position-absolute {
+      z-index: 1;
+    }
 
-        #adContainerLayer1 {
-            top: 570px;
-            left: 124px;
-            transform-origin: top left;
-        }
+    #adContainerLayer1 {
+      top: 0px;
+      left: 0px;
+      transform-origin: top left;
+    }
 
-        #adContainerLayer1.top-layer {
-            z-index: 9999 !important;
-        }
+    #adContainerLayer1.top-layer {
+      z-index: 9999 !important;
+    }
 
-        #adContainerLayer2 {
-            top: 61px;
-            left: 955px;
-            transform-origin: top left;
-        }
+    #adContainerLayer2 {
+      top: 30px;
+      left: 1156px;
+      transform-origin: top left;
+    }
 
-        #adContainerLayer2.top-layer {
-            z-index: 9999 !important;
-        }
+    #adContainerLayer2.top-layer {
+      z-index: 9999 !important;
+    }
 
-        .bg-panel {
-            background-image: url('background2.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-    </style>
+    .bg-panel {
+      background-image: url('background2.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    #nativeAdContainerLayer1 img,
+    #nativeAdContainerLayer2 img {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .scale-slider {
+      width: 180px;
+      min-width: 140px;
+      max-width: 220px;
+    }
+
+    .scale-number {
+      width: 90px;
+      min-width: 80px;
+      max-width: 110px;
+    }
+  </style>
 </head>
 
 <body>
-    <div class="container-fluid bg-dark">
-        <a class="text-decoration-none" href="https://www.magnite.com/sellers/">
-            <img class="img-fluid align-middle" src="logo.png" alt="SpringServe Logo">
-            <span class="text-white align-middle fs-2">SpringServe Tiles Ad</span>
-        </a>
+  <div class="container-fluid bg-dark">
+    <a class="text-decoration-none" href="https://www.magnite.com/sellers/">
+      <img class="img-fluid align-middle" src="logo.png" alt="SpringServe Logo">
+      <span class="text-white align-middle fs-2">SpringServe Tiles Ad</span>
+    </a>
+  </div>
+
+  <div class="container mt-1 font-monospace">
+
+    <!-- Layer 1 Controls -->
+    <div class="input-group mb-1 align-items-center">
+      <label class="input-group-text bg-dark text-white fs-6 ms-2" for="ad-tag-layer1">Tile1</label>
+      <input class="form-control fs-6" id="ad-tag-layer1" type="url"
+        value="https://tiles.springserve.com/nv/951773?w=1920&h=1080&sizes=1280x720">
+
+      <span class="input-group-text ms-1">Scale</span>
+      <input class="form-range scale-slider ms-1" id="videoScaleRange" type="range" min="0.0" max="1.00" step="0.01"
+        value="1.00" aria-label="Video scale slider">
+      <input class="form-control scale-number ms-1" id="videoScaleNumber" type="number" min="0.00" max="1.00"
+        step="0.01" value="1.00" inputmode="decimal" aria-label="Video scale number input">
+
+      <button class="btn btn-warning ms-1" id="forward_tiles1">▲</button>
+      <button class="btn btn-danger ms-1" id="backward_tiles1">▼</button>
+      <button class="btn btn-primary ms-1" id="load_tiles1">Load</button>
+      <button class="btn btn-info ms-1 me-2" id="clear_tiles1">Unload</button>
     </div>
 
-    <div class="container mt-1 font-monospace">
+    <!-- Layer 2 Controls -->
+    <div class="input-group mb-1">
+      <label class="input-group-text bg-dark text-white fs-6 ms-2" for="ad-tag-layer2">Tile2</label>
+      <input class="form-control fs-6" id="ad-tag-layer2" type="url"
+        value="https://tiles.springserve.com/nv/951774?w=1920&h=1080&sizes=120x600">
 
-        <!-- Layer 1 Controls -->
-        <div class="input-group mb-1">
-            <label class="input-group-text bg-dark text-white fs-6 ms-2" for="ad-tag-layer1">Tile1</label>
-            <input class="form-control fs-6" id="ad-tag-layer1" type="url"
-                value="https://tiles.springserve.com/nvr/21133?w=1920&h=1080&content_keywords=changi">
-            <button class="btn btn-secondary ms-1" id="squeezeback">Squeeze</button>
-            <button class="btn btn-warning ms-1" id="forward_tiles1">▲</button>
-            <button class="btn btn-danger ms-1" id="backward_tiles1">▼</button>
-            <button class="btn btn-primary ms-1" id="load_tiles1">Load</button>
-            <button class="btn btn-info ms-1 me-2" id="clear_tiles1">Unload</button>
-        </div>
-
-        <!-- Layer 2 Controls -->
-        <div class="input-group mb-1">
-            <label class="input-group-text bg-dark text-white fs-6 ms-2" for="ad-tag-layer2">Tile2</label>
-            <input class="form-control fs-6" id="ad-tag-layer2" type="url"
-                value="https://tiles.springserve.com/nvr/21133?w=1920&h=1080&content_keywords=adobe">
-            <button class="btn btn-secondary ms-1" id="full">Full</button>
-            <button class="btn btn-warning ms-1" id="forward_tiles2">▲</button>
-            <button class="btn btn-danger ms-1" id="backward_tiles2">▼</button>
-            <button class="btn btn-primary ms-1" id="load_tiles2">Load</button>
-            <button class="btn btn-info ms-1 me-2" id="clear_tiles2">Unload</button>
-        </div>
-
-        <!-- Content Display -->
-        <div class="position-relative mb-3 bg-panel" id="content">
-
-            <div class="position-absolute" id="adContainerLayer1">
-                <div id="nativeAdContainerLayer1"></div>
-            </div>
-
-            <div class="position-absolute" id="adContainerLayer2">
-                <div id="nativeAdContainerLayer2"></div>
-            </div>
-
-            <div class="position-absolute">
-                <video id="contentElement" width="1280" height="720" controls autoplay loop muted>
-                    <source src="https://assets.springserve.com/video_creatives/001/149/002/Tibet-8020539.mp4"
-                        type="video/mp4">
-                </video>
-            </div>
-
-        </div>
+      <button class="btn btn-secondary ms-1" id="scale90">0.9x</button>
+      <button class="btn btn-secondary ms-1" id="full">Full</button>
+      <button class="btn btn-warning ms-1" id="forward_tiles2">▲</button>
+      <button class="btn btn-danger ms-1" id="backward_tiles2">▼</button>
+      <button class="btn btn-primary ms-1" id="load_tiles2">Load</button>
+      <button class="btn btn-info ms-1 me-2" id="clear_tiles2">Unload</button>
     </div>
 
-    <script>
-        // DOM Elements
-        const adContainerLayer1 = document.getElementById("adContainerLayer1");
-        const nativeAdContainerLayer1 = document.getElementById("nativeAdContainerLayer1");
-        const adContainerLayer2 = document.getElementById("adContainerLayer2");
-        const nativeAdContainerLayer2 = document.getElementById("nativeAdContainerLayer2");
-        const video = document.getElementById("contentElement");
+    <!-- Content Display -->
+    <div class="position-relative mb-3 bg-panel" id="content">
 
-        const forward1Btn = document.getElementById("forward_tiles1");
-        const backward1Btn = document.getElementById("backward_tiles1");
-        const forward2Btn = document.getElementById("forward_tiles2");
-        const backward2Btn = document.getElementById("backward_tiles2");
+      <div class="position-absolute" id="adContainerLayer1">
+        <div id="nativeAdContainerLayer1"></div>
+      </div>
 
-        const loadTiles1Btn = document.getElementById("load_tiles1");
-        const loadTiles2Btn = document.getElementById("load_tiles2");
-        const clearTiles1Btn = document.getElementById("clear_tiles1");
-        const clearTiles2Btn = document.getElementById("clear_tiles2");
+      <div class="position-absolute" id="adContainerLayer2">
+        <div id="nativeAdContainerLayer2"></div>
+      </div>
 
-        const adTagLayer1 = document.getElementById("ad-tag-layer1");
-        const adTagLayer2 = document.getElementById("ad-tag-layer2");
+      <div class="position-absolute">
+        <video id="contentElement" width="1280" height="720" controls autoplay loop muted>
+          <source src="https://assets.springserve.com/video_creatives/001/149/002/Tibet-8020539.mp4" type="video/mp4">
+        </video>
+      </div>
 
-        // Pause → Load Tiles
-        video.addEventListener("pause", () => {
-            if (!video.ended) {
-                loadTiles1Btn.click();
-                loadTiles2Btn.click();
-            }
-        });
+    </div>
+  </div>
 
-        // Play → Clear Tiles
-        const clickClearOnPlay = () => {
-            if (!video.paused) {
-                clearTiles1Btn.click();
-                clearTiles2Btn.click();
-            }
-        };
-        video.addEventListener("play", clickClearOnPlay);
-        video.addEventListener("playing", clickClearOnPlay);
+  <script>
+    // =========================
+    // DOM Elements
+    // =========================
+    const adContainerLayer1 = document.getElementById("adContainerLayer1");
+    const nativeAdContainerLayer1 = document.getElementById("nativeAdContainerLayer1");
+    const adContainerLayer2 = document.getElementById("adContainerLayer2");
+    const nativeAdContainerLayer2 = document.getElementById("nativeAdContainerLayer2");
+    const video = document.getElementById("contentElement");
 
-        // Animation Helper
-        function animateScale(element, targetScale, duration = 500) {
-            element.style.transformOrigin = "top left";
-            const style = window.getComputedStyle(element);
-            const startMatrix = new DOMMatrixReadOnly(style.transform === "none" ? "" : style.transform);
-            const startScale = startMatrix.a || 1;
-            const startTime = performance.now();
+    const forward1Btn = document.getElementById("forward_tiles1");
+    const backward1Btn = document.getElementById("backward_tiles1");
+    const forward2Btn = document.getElementById("forward_tiles2");
+    const backward2Btn = document.getElementById("backward_tiles2");
 
-            const step = (now) => {
-                const elapsed = now - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const scale = startScale + (targetScale - startScale) * progress;
-                element.style.transform = `scale(${scale})`;
-                if (progress < 1) requestAnimationFrame(step);
-            };
+    const loadTiles1Btn = document.getElementById("load_tiles1");
+    const loadTiles2Btn = document.getElementById("load_tiles2");
+    const clearTiles1Btn = document.getElementById("clear_tiles1");
+    const clearTiles2Btn = document.getElementById("clear_tiles2");
 
-            requestAnimationFrame(step);
+    const adTagLayer1 = document.getElementById("ad-tag-layer1");
+    const adTagLayer2 = document.getElementById("ad-tag-layer2");
+
+    const videoScaleRange = document.getElementById("videoScaleRange");
+    const videoScaleNumber = document.getElementById("videoScaleNumber");
+
+    // =========================
+    // Helpers
+    // =========================
+    const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+
+    // Track "real" playback transitions
+    let tilesAreLoaded = false;
+    let lastPlaybackState = video.paused ? "paused" : "playing";
+
+    // ✅ Freeze tile logic during scale interaction
+    let scaleFreeze = false;
+    let scaleFreezeTimer = null;
+
+    function freezeTileLogicBriefly(ms = 350) {
+      scaleFreeze = true;
+      if (scaleFreezeTimer) clearTimeout(scaleFreezeTimer);
+      scaleFreezeTimer = setTimeout(() => {
+        scaleFreeze = false;
+      }, ms);
+    }
+
+    // =========================
+    // Scaling (stable + fixes 0->1 jump)
+    // =========================
+    let activeScaleRAF = null;
+
+    function animateScale(element, targetScale, duration = 250) {
+      if (activeScaleRAF) cancelAnimationFrame(activeScaleRAF);
+
+      element.style.transformOrigin = "top left";
+
+      const style = window.getComputedStyle(element);
+      const matrix = new DOMMatrixReadOnly(style.transform === "none" ? "" : style.transform);
+
+      // keep 0 as 0 (don't fallback to 1)
+      const startScale = Number.isFinite(matrix.a) ? matrix.a : 1;
+
+      const startTime = performance.now();
+
+      const step = (now) => {
+        const elapsed = now - startTime;
+        const t = Math.min(elapsed / duration, 1);
+
+        const scale = startScale + (targetScale - startScale) * t;
+        element.style.transform = `scale(${scale})`;
+
+        if (t < 1) activeScaleRAF = requestAnimationFrame(step);
+        else activeScaleRAF = null;
+      };
+
+      activeScaleRAF = requestAnimationFrame(step);
+    }
+
+    function setVideoScale(rawValue) {
+      // ✅ Freeze tile logic so scale(0) -> scale(up) never unloads/reloads tiles
+      freezeTileLogicBriefly();
+
+      const v = clamp(Number(rawValue), 0.0, 1.0);
+      const fixed = Math.round(v * 100) / 100;
+
+      // sync UI to 2dp
+      videoScaleRange.value = fixed.toFixed(2);
+      videoScaleNumber.value = fixed.toFixed(2);
+
+      animateScale(video, fixed);
+    }
+
+    // Slider + number input sync
+    videoScaleRange.addEventListener("input", (e) => setVideoScale(e.target.value));
+    videoScaleNumber.addEventListener("input", (e) => setVideoScale(e.target.value));
+    videoScaleNumber.addEventListener("blur", (e) => setVideoScale(e.target.value));
+
+    document.getElementById("scale90").addEventListener("click", () => setVideoScale(0.9));
+    document.getElementById("full").addEventListener("click", () => setVideoScale(1.0));
+
+    // =========================
+    // Layer z-index controls
+    // =========================
+    forward1Btn.addEventListener("click", () => adContainerLayer1.classList.add("top-layer"));
+    backward1Btn.addEventListener("click", () => adContainerLayer1.classList.remove("top-layer"));
+    forward2Btn.addEventListener("click", () => adContainerLayer2.classList.add("top-layer"));
+    backward2Btn.addEventListener("click", () => adContainerLayer2.classList.remove("top-layer"));
+
+    // =========================
+    // Tile load/unload (stable)
+    // =========================
+    const tileState = {
+      layer1: { controller: null, inFlight: false },
+      layer2: { controller: null, inFlight: false }
+    };
+
+    function setLoadButtonState(button, state) {
+      // state: "idle" | "loading" | "on" | "off"
+      if (state === "loading") {
+        button.disabled = true;
+        button.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading`;
+        return;
+      }
+
+      button.disabled = false;
+
+      if (state === "on") {
+        button.innerHTML = "ON";
+        button.classList.remove("btn-primary", "btn-danger");
+        button.classList.add("btn-success");
+        return;
+      }
+
+      if (state === "off") {
+        button.innerHTML = "OFF";
+        button.classList.remove("btn-primary", "btn-success");
+        button.classList.add("btn-danger");
+        return;
+      }
+
+      // idle
+      button.innerHTML = "Load";
+      button.classList.remove("btn-success", "btn-danger");
+      button.classList.add("btn-primary");
+    }
+
+    async function loadTile({ layerKey, adTagInput, nativeContainer, button }) {
+      const state = tileState[layerKey];
+      if (state.inFlight) return;
+
+      if (state.controller) state.controller.abort();
+      state.controller = new AbortController();
+      state.inFlight = true;
+
+      setLoadButtonState(button, "loading");
+
+      try {
+        const tilesUrl = adTagInput.value.trim();
+        const response = await fetch(tilesUrl, { signal: state.controller.signal });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+
+        const data = await response.json();
+        const admStr = data?.seatbid?.[0]?.bid?.[0]?.adm;
+        const adm = typeof admStr === "string" ? JSON.parse(admStr) : {};
+
+        const imgUrl = adm?.native?.assets?.[0]?.img?.url;
+        if (!imgUrl) throw new Error("No image URL");
+
+        const img = document.createElement("img");
+        img.src = imgUrl;
+        img.alt = "Tile creative";
+
+        nativeContainer.innerHTML = "";
+        nativeContainer.appendChild(img);
+
+        const imp = adm?.native?.imptrackers?.[0];
+        if (imp) fetch(imp).catch(() => { });
+
+        setLoadButtonState(button, "on");
+      } catch (err) {
+        if (err?.name !== "AbortError") {
+          console.error(err);
+          setLoadButtonState(button, "off");
         }
+      } finally {
+        state.inFlight = false;
+      }
+    }
 
-        // Video Scale Controls
-        document.getElementById("squeezeback").addEventListener("click", () => animateScale(video, 0.73));
-        document.getElementById("full").addEventListener("click", () => animateScale(video, 1.0));
+    function unloadTile({ layerKey, nativeContainer, button }) {
+      const state = tileState[layerKey];
+      if (state.controller) state.controller.abort();
+      state.controller = null;
+      state.inFlight = false;
 
-        // Forward / Backward
-        forward1Btn.addEventListener("click", () => adContainerLayer1.classList.add("top-layer"));
-        backward1Btn.addEventListener("click", () => adContainerLayer1.classList.remove("top-layer"));
-        forward2Btn.addEventListener("click", () => adContainerLayer2.classList.add("top-layer"));
-        backward2Btn.addEventListener("click", () => adContainerLayer2.classList.remove("top-layer"));
+      nativeContainer.innerHTML = "";
+      setLoadButtonState(button, "idle");
+    }
 
-        // Load Button Helper
-        async function loadTile(adTagInput, nativeContainer, button) {
-            button.disabled = true;
-            button.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading`;
+    // Bind load/unload buttons
+    loadTiles1Btn.addEventListener("click", () =>
+      loadTile({
+        layerKey: "layer1",
+        adTagInput: adTagLayer1,
+        nativeContainer: nativeAdContainerLayer1,
+        button: loadTiles1Btn
+      })
+    );
 
-            try {
-                const tilesUrl = adTagInput.value;
-                const response = await fetch(tilesUrl);
-                if (!response.ok) throw new Error("HTTP " + response.status);
+    loadTiles2Btn.addEventListener("click", () =>
+      loadTile({
+        layerKey: "layer2",
+        adTagInput: adTagLayer2,
+        nativeContainer: nativeAdContainerLayer2,
+        button: loadTiles2Btn
+      })
+    );
 
-                const data = await response.json();
-                const adm = JSON.parse(data?.seatbid?.[0]?.bid?.[0]?.adm || "{}");
-                const imgUrl = adm?.native?.assets?.[0]?.img?.url;
-                if (!imgUrl) throw new Error("No image URL");
+    clearTiles1Btn.addEventListener("click", () =>
+      unloadTile({
+        layerKey: "layer1",
+        nativeContainer: nativeAdContainerLayer1,
+        button: loadTiles1Btn
+      })
+    );
 
-                const img = document.createElement("img");
-                img.src = imgUrl;
+    clearTiles2Btn.addEventListener("click", () =>
+      unloadTile({
+        layerKey: "layer2",
+        nativeContainer: nativeAdContainerLayer2,
+        button: loadTiles2Btn
+      })
+    );
 
-                nativeContainer.innerHTML = "";
-                nativeContainer.appendChild(img);
+    function loadBothTiles() {
+      if (tilesAreLoaded) return;
+      tilesAreLoaded = true;
+      loadTiles1Btn.click();
+      loadTiles2Btn.click();
+    }
 
-                fetch(adm?.native?.imptrackers?.[0]).catch(() => { });
+    function unloadBothTiles() {
+      if (!tilesAreLoaded) return;
+      tilesAreLoaded = false;
+      clearTiles1Btn.click();
+      clearTiles2Btn.click();
+    }
 
-                button.innerHTML = "ON";
-                button.classList.remove("btn-primary", "btn-danger");
-                button.classList.add("btn-success");
-            } catch (err) {
-                console.error(err);
-                button.innerHTML = "OFF";
-                button.classList.remove("btn-primary", "btn-success");
-                button.classList.add("btn-danger");
-            } finally {
-                button.disabled = false;
-            }
+    // =========================
+    // Playback-driven tile logic (stable)
+    // =========================
+    function reconcileTilesWithPlayback() {
+      // ✅ During slider moves (including 0 -> up), do NOTHING to tiles
+      if (scaleFreeze) return;
+
+      const nowState = video.paused ? "paused" : "playing";
+      if (nowState === lastPlaybackState) return;
+      lastPlaybackState = nowState;
+
+      if (nowState === "paused") {
+        if (!video.ended) loadBothTiles();
+      } else {
+        unloadBothTiles();
+      }
+    }
+
+    ["play", "pause", "ended"].forEach((evt) => {
+      video.addEventListener(evt, () => {
+        if (evt === "ended") {
+          if (!scaleFreeze) unloadBothTiles();
+          lastPlaybackState = "paused";
+          return;
         }
+        reconcileTilesWithPlayback();
+      });
+    });
 
-        loadTiles1Btn.addEventListener("click", () => loadTile(adTagLayer1, nativeAdContainerLayer1, loadTiles1Btn));
-        loadTiles2Btn.addEventListener("click", () => loadTile(adTagLayer2, nativeAdContainerLayer2, loadTiles2Btn));
+    video.addEventListener("playing", reconcileTilesWithPlayback);
 
-        // Clear buttons reset state
-        clearTiles1Btn.addEventListener("click", () => {
-            nativeAdContainerLayer1.innerHTML = "";
-            loadTiles1Btn.innerHTML = "Load";
-            loadTiles1Btn.classList.remove("btn-success", "btn-danger");
-            loadTiles1Btn.classList.add("btn-primary");
-        });
-
-        clearTiles2Btn.addEventListener("click", () => {
-            nativeAdContainerLayer2.innerHTML = "";
-            loadTiles2Btn.innerHTML = "Load";
-            loadTiles2Btn.classList.remove("btn-success", "btn-danger");
-            loadTiles2Btn.classList.add("btn-primary");
-        });
-
-    </script>
+    // =========================
+    // Init
+    // =========================
+    setVideoScale(videoScaleRange.value ?? 1.0);
+    // Set baseline without triggering tile logic during init scale animation
+    freezeTileLogicBriefly(0);
+    reconcileTilesWithPlayback();
+  </script>
 </body>
 
 </html>
