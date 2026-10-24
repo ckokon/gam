@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAM Compliant Continuous Scroll & Ad Refresh Demo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gam: {
+                            blue: '#1a73e8',
+                            green: '#34a853',
+                            yellow: '#fbbc04',
+                            red: '#ea4335',
+                            dark: '#202124'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .article-body p {
+            font-family: 'Merriweather', serif;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            color: #374151;
+            font-size: 1.05rem;
+        }
+
+        /* Ad Banner Refresh Shimmer Effect */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .ad-refreshing {
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+        }
+
+        /* Invisible Sentinel Visualizer in Debug Mode */
+        .show-sentinel #scroll-sentinel {
+            outline: 2px dashed #ea4335 !important;
+            background-color: rgba(234, 67, 53, 0.1) !important;
+            height: 24px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 11px !important;
+            font-weight: bold !important;
+            color: #ea4335 !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased min-h-screen">
+
+    <!-- Sticky Header Navbar -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="bg-gam-blue text-white font-bold px-2.5 py-1 rounded text-xs tracking-wide">GAM DEMO</span>
+                <h1 class="text-lg font-bold text-slate-800 hidden md:block">Continuous Scroll & Ad Refresh Architecture</h1>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button id="toggle-sentinel-view" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-md font-medium border border-slate-300 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-eye text-slate-500"></i>
+                    <span id="sentinel-btn-text">Reveal Sentinel Line</span>
+                </button>
+                <button id="reset-demo-btn" class="text-xs bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-md font-medium transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate"></i> Reset
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container Layout -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Column: Article Content Stream (8 cols) -->
+            <main class="lg:col-span-7 xl:col-span-8 space-y-8">
+
+                <!-- ARTICLE 1 -->
+                <article id="article-1" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                    <div class="flex items-center space-x-2 text-xs font-semibold text-gam-blue uppercase tracking-wider mb-2">
+                        <span>Web Infrastructure</span>
+                        <span>•</span>
+                        <span>5 Min Read</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-4">
+                        Article 1: Understanding Modern Web Architecture
+                    </h2>
+                    
+                    <div class="flex items-center space-x-3 pb-6 mb-6 border-b border-slate-100">
+                        <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600">
+                            JD
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-800">Jane Doe</p>
+                            <p class="text-xs text-slate-500">Published Oct 24, 2026</p>
+                        </div>
+                    </div>
+
+                    <div class="article-body">
+                        <p>
+                            Modern web applications demand high responsiveness, scalability, and optimal monetisation strategies. As content delivery systems evolve, architects are turning to single-page application patterns combined with streaming server-side rendering to serve seamless digital experiences.
+                        </p>
+                        <p>
+                            Traditional page reload models created friction for users while browsing multi-chapter or long-form investigative media. Continuous scrolling addresses this friction by dynamically appending new content streams into the DOM as the viewport approaches lower boundaries.
+                        </p>
+                        <p>
+                            However, combining dynamic content delivery with digital advertising introduces technical challenges regarding ad refresh limits, viewability metrics, and programmatic compliance enforced by platforms such as Google Ad Manager (GAM).
+                        </p>
+                        <p>
+                            As you scroll past this paragraph, you will encounter the invisible boundary separating Article 1 from Article 2. This boundary houses a <strong>sentinel element</strong> that triggers both the loading of new content and a compliant ad unit refresh.
+                        </p>
+                    </div>
+                </article>
+
+                <!-- SENTINEL ELEMENT & AD CONTAINER ZONE -->
+                <div class="relative py-2">
+                    
+                    <!-- 3. INVISIBLE SENTINEL ELEMENT (Zero Height by default) -->
+                    <div id="scroll-sentinel" class="w-full opacity-0 pointer-events-none transition-all">
+                        <span class="hidden">[Sentinel Boundary Position]</span>
+                    </div>
+
+                    <!-- Visual Article Separation Line (Mandatory for GAM Compliance) -->
+                    <div class="my-6 border-t-2 border-dashed border-slate-300 relative flex items-center justify-center">
+                        <span class="bg-slate-100 text-slate-500 text-xs font-semibold uppercase tracking-widest px-4 py-1 rounded-full border border-slate-300">
+                            Article Transition Boundary
+                        </span>
+                    </div>
+
+                    <!-- 2. 728x90 LEADERBOARD AD SLOT CONTAINER -->
+                    <div class="flex flex-col items-center justify-center my-6">
+                        <span class="text-[10px] font-semibold tracking-wider text-slate-400 uppercase mb-1">
+                            Advertisement — GAM Slot ID: <code class="bg-slate-200 px-1 py-0.5 rounded text-slate-700">/1234567/leaderboard_continuous</code>
+                        </span>
+                        
+                        <!-- 728x90 Box -->
+                        <div id="gam-ad-slot-1" class="w-full max-w-[728px] h-[90px] bg-slate-100 border border-slate-300 rounded-lg shadow-inner flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300">
+                            <div id="ad-creative-content" class="text-center p-2">
+                                <div class="flex items-center justify-center gap-2 text-gam-blue font-bold text-base sm:text-lg">
+                                    <i class="fa-solid fa-rectangle-ad text-xl"></i>
+                                    <span>Brand Sponsor #1: Cloud Scaling Solutions</span>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-0.5">Premium Programmatic Leaderboard Creative • Impression #<span id="ad-impression-counter">1</span></p>
+                            </div>
+
+                            <!-- Live Visual Indicator Badge inside Ad -->
+                            <div id="ad-status-badge" class="absolute top-1.5 right-1.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-300 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Active Creative
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ARTICLE 2 -->
+                <article id="article-2" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                    <div class="flex items-center space-x-2 text-xs font-semibold text-purple-600 uppercase tracking-wider mb-2">
+                        <span>Digital Monetization</span>
+                        <span>•</span>
+                        <span>4 Min Read</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-4">
+                        Article 2: The Future of Dynamic Monetization
+                    </h2>
+                    
+                    <div class="flex items-center space-x-3 pb-6 mb-6 border-b border-slate-100">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                            AL
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-800">Alex Lemons</p>
+                            <p class="text-xs text-slate-500">Published Oct 24, 2026</p>
+                        </div>
+                    </div>
+
+                    <div class="article-body">
+                        <p>
+                            Monetising continuous scroll experiences requires strict adherence to buyer expectations and platform regulations. When ads refresh without clear user engagement or explicit content transitions, viewability scores degrade, leading to lower eCPMs and potential account suspensions.
+                        </p>
+                        <p>
+                            By utilizing native browser APIs such as the <code>IntersectionObserver</code>, developers can detect exactly when a reader transitions into a secondary article block. This ensures that the dynamic refresh call to Google Publisher Tag (GPT) is tied directly to a legitimate user action.
+                        </p>
+                        <p>
+                            Furthermore, implementing minimum interval debounces (such as preventing refreshes within a 30-second window or validating 50%+ viewport exposure) protects publisher health while maximizing programmatic yield across multi-article page sessions.
+                        </p>
+                    </div>
+                </article>
+
+            </main>
+
+            <!-- Right Column: GAM Live Debug & Compliance Dashboard (4 cols) -->
+            <aside class="lg:col-span-5 xl:col-span-4 sticky top-20 space-y-4">
+                <div class="bg-slate-900 text-white rounded-xl p-5 shadow-xl border border-slate-800">
+                    
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-gauge-high text-gam-blue"></i>
+                            <h3 class="font-bold text-sm tracking-wide text-slate-100">GAM Debug Dashboard</h3>
+                        </div>
+                        <span class="text-[10px] bg-slate-800 text-slate-400 font-mono px-2 py-0.5 rounded">v2.4-GPT</span>
+                    </div>
+
+                    <!-- Observer State Indicator -->
+                    <div class="mb-4 bg-slate-800/60 p-3 rounded-lg border border-slate-700/50">
+                        <div class="text-xs text-slate-400 mb-1 font-medium">IntersectionObserver State:</div>
+                        <div id="observer-state" class="flex items-center gap-2 font-mono text-xs font-bold text-amber-400">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                            WAITING_FOR_INTERSECTION
+                        </div>
+                    </div>
+
+                    <!-- GPT Refresh Log -->
+                    <div class="mb-4 bg-slate-800/60 p-3 rounded-lg border border-slate-700/50">
+                        <div class="flex justify-between items-center text-xs text-slate-400 mb-2 font-medium">
+                            <span>GPT Refresh Log:</span>
+                            <span id="refresh-count-badge" class="bg-gam-blue text-white text-[10px] px-1.5 py-0.5 rounded font-bold">0 Refreshes</span>
+                        </div>
+                        <div class="font-mono text-[11px] space-y-1 text-slate-300">
+                            <div class="flex justify-between">
+                                <span class="text-slate-500">Last Trigger:</span>
+                                <span id="last-refresh-time" class="text-slate-200">None</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-500">GPT Command:</span>
+                                <span id="gpt-cmd-status" class="text-slate-400">googletag.pubads().refresh()</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Policy & Compliance Checklist -->
+                    <div class="space-y-2">
+                        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-1 mb-2">
+                            GAM Policy Compliance Rules
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs p-2 rounded bg-slate-800/30">
+                            <span class="text-slate-300 flex items-center gap-2">
+                                <i class="fa-solid fa-square-check text-emerald-400"></i> Distinct Articles
+                            </span>
+                            <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800">PASSED</span>
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs p-2 rounded bg-slate-800/30">
+                            <span class="text-slate-300 flex items-center gap-2">
+                                <i class="fa-solid fa-square-check text-emerald-400"></i> Visual Demarcation Line
+                            </span>
+                            <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800">PASSED</span>
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs p-2 rounded bg-slate-800/30">
+                            <span class="text-slate-300 flex items-center gap-2">
+                                <i id="icon-interval-guard" class="fa-solid fa-circle-check text-emerald-400"></i> Interval Guard (Debounce)
+                            </span>
+                            <span id="badge-interval-guard" class="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800">READY</span>
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs p-2 rounded bg-slate-800/30">
+                            <span class="text-slate-300 flex items-center gap-2">
+                                <i id="icon-inview" class="fa-solid fa-circle-notch fa-spin text-amber-400"></i> Ad In-View Verification
+                            </span>
+                            <span id="badge-inview" class="text-[10px] font-mono text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800">MONITORING</span>
+                        </div>
+                    </div>
+
+                    <!-- Developer Instructions Box -->
+                    <div class="mt-4 p-3 bg-slate-800/90 rounded-lg text-[11px] text-slate-300 border border-slate-700">
+                        <p class="font-semibold text-gam-blue mb-1"><i class="fa-solid fa-info-circle"></i> Testing Instructions:</p>
+                        <p class="text-slate-400">Scroll down past Article 1. As the invisible sentinel intersects the threshold, the dashboard will log the event and trigger a compliant GAM ad refresh.</p>
+                    </div>
+
+                </div>
+            </aside>
+
+        </div>
+    </div>
+
+    <!-- JavaScript Implementation -->
+    <script>
+        // State Variables
+        let refreshCount = 0;
+        let lastRefreshTimestamp = 0;
+        const MIN_REFRESH_INTERVAL_MS = 10000; // 10s safeguard interval for demo (30s standard in production)
+        let isAdInView = false;
+        let hasTriggeredForCurrentScroll = false;
+
+        // Mock Ad Creatives for Refresh Cycling
+        const mockCreatives = [
+            { title: "Brand Sponsor #1: Cloud Scaling Solutions", color: "text-gam-blue" },
+            { title: "Brand Sponsor #2: NextGen Analytics Platform", color: "text-purple-600" },
+            { title: "Brand Sponsor #3: Enterprise Security Suite", color: "text-emerald-600" }
+        ];
+
+        // DOM Elements
+        const sentinelEl = document.getElementById('scroll-sentinel');
+        const adSlotContainer = document.getElementById('gam-ad-slot-1');
+        const adCreativeContent = document.getElementById('ad-creative-content');
+        const adImpressionCounter = document.getElementById('ad-impression-counter');
+        const adStatusBadge = document.getElementById('ad-status-badge');
+        
+        // Debug Dashboard Elements
+        const observerStateEl = document.getElementById('observer-state');
+        const refreshCountBadge = document.getElementById('refresh-count-badge');
+        const lastRefreshTimeEl = document.getElementById('last-refresh-time');
+        const badgeIntervalGuard = document.getElementById('badge-interval-guard');
+        const iconIntervalGuard = document.getElementById('icon-interval-guard');
+        const badgeInView = document.getElementById('badge-inview');
+        const iconInView = document.getElementById('icon-inview');
+        const toggleSentinelBtn = document.getElementById('toggle-sentinel-view');
+        const sentinelBtnText = document.getElementById('sentinel-btn-text');
+        const resetDemoBtn = document.getElementById('reset-demo-btn');
+
+        // Initialize Observers
+        window.addEventListener('DOMContentLoaded', () => {
+            setupSentinelObserver();
+            setupAdViewabilityObserver();
+        });
+
+        /**
+         * 1. Sentinel Intersection Observer
+         * Tracks when the boundary between Article 1 and Article 2 enters view.
+         */
+        function setupSentinelObserver() {
+            const observerOptions = {
+                root: null, // Viewport
+                rootMargin: '100px 0px', // Trigger slightly before exact intersection
+                threshold: 0
+            };
+
+            const sentinelObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        updateObserverUI(true);
+                        
+                        // Execute compliant refresh check
+                        attemptGAMAdRefresh();
+                    } else {
+                        updateObserverUI(false);
+                    }
+                });
+            }, observerOptions);
+
+            sentinelObserver.observe(sentinelEl);
+        }
+
+        /**
+         * 2. Ad Viewability Intersection Observer
+         * Verifies that at least 50% of the ad unit is visible before refreshing.
+         */
+        function setupAdViewabilityObserver() {
+            const adObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    isAdInView = entry.isIntersecting;
+                    
+                    if (isAdInView) {
+                        badgeInView.innerText = "IN-VIEW (>=50%)";
+                        badgeInView.className = "text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800";
+                        iconInView.className = "fa-solid fa-circle-check text-emerald-400";
+                    } else {
+                        badgeInView.innerText = "OFF-SCREEN";
+                        badgeInView.className = "text-[10px] font-mono text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800";
+                        iconInView.className = "fa-solid fa-circle-exclamation text-amber-400";
+                    }
+                });
+            }, { threshold: 0.5 }); // Require 50% visibility
+
+            adObserver.observe(adSlotContainer);
+        }
+
+        /**
+         * 3. Simulated Google Publisher Tag (GPT) Refresh Logic
+         * Mimics `googletag.pubads().refresh([slot])` with GAM policy checks.
+         */
+        function attemptGAMAdRefresh() {
+            const now = Date.now();
+            const timeSinceLastRefresh = now - lastRefreshTimestamp;
+
+            // Compliance Check A: Debounce / Minimum Interval Guard
+            if (lastRefreshTimestamp !== 0 && timeSinceLastRefresh < MIN_REFRESH_INTERVAL_MS) {
+                const remainingSecs = Math.ceil((MIN_REFRESH_INTERVAL_MS - timeSinceLastRefresh) / 1000);
+                badgeIntervalGuard.innerText = `BLOCKED (${remainingSecs}s cooldown)`;
+                badgeIntervalGuard.className = "text-[10px] font-mono text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800";
+                iconIntervalGuard.className = "fa-solid fa-clock text-amber-400";
+                return;
+            }
+
+            // Compliance Check B: Viewability Verification
+            if (!isAdInView) {
+                console.warn("[GAM Policy Alert] Ad refresh suppressed: Creative is off-screen.");
+                return;
+            }
+
+            // Lock trigger until cooldown expires
+            lastRefreshTimestamp = now;
+            refreshCount++;
+
+            // Reset Interval Guard UI Status
+            badgeIntervalGuard.innerText = "COOLDOWN ACTIVE";
+            badgeIntervalGuard.className = "text-[10px] font-mono text-blue-400 bg-blue-950/60 px-1.5 py-0.5 rounded border border-blue-800";
+            iconIntervalGuard.className = "fa-solid fa-hourglass-half text-blue-400";
+
+            // Trigger Visual Ad Refresh (Simulates GPT dynamic fetch)
+            executeGPTCommand();
+        }
+
+        /**
+         * Executes simulated GPT refresh with visual feedback.
+         */
+        function executeGPTCommand() {
+            // 1. Show Shimmer Loading State on Banner
+            adSlotContainer.classList.add('ad-refreshing');
+            adStatusBadge.className = "absolute top-1.5 right-1.5 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-300 flex items-center gap-1";
+            adStatusBadge.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Refreshing...`;
+
+            // 2. Simulate Network Delay for Auction / Creative Fetch (600ms)
+            setTimeout(() => {
+                adSlotContainer.classList.remove('ad-refreshing');
+                
+                // Cycle Ad Content
+                const creative = mockCreatives[refreshCount % mockCreatives.length];
+                adCreativeContent.innerHTML = `
+                    <div class="flex items-center justify-center gap-2 ${creative.color} font-bold text-base sm:text-lg">
+                        <i class="fa-solid fa-rectangle-ad text-xl"></i>
+                        <span>${creative.title}</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-0.5">Premium Programmatic Leaderboard Creative • Impression #${refreshCount + 1}</p>
+                `;
+
+                // Update Status Badge
+                adStatusBadge.className = "absolute top-1.5 right-1.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-300 flex items-center gap-1";
+                adStatusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Refreshed (GPT)`;
+
+                // Update Dashboard Log
+                refreshCountBadge.innerText = `${refreshCount} ${refreshCount === 1 ? 'Refresh' : 'Refreshes'}`;
+                const date = new Date();
+                lastRefreshTimeEl.innerText = date.toTimeString().split(' ')[0] + '.' + String(date.getMilliseconds()).padStart(3, '0');
+
+            }, 600);
+        }
+
+        /**
+         * Helper UI Updates for IntersectionObserver
+         */
+        function updateObserverUI(isIntersecting) {
+            if (isIntersecting) {
+                observerStateEl.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span> SENTINEL_INTERSECTED`;
+                observerStateEl.className = "flex items-center gap-2 font-mono text-xs font-bold text-emerald-400";
+            } else {
+                observerStateEl.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> WAITING_FOR_INTERSECTION`;
+                observerStateEl.className = "flex items-center gap-2 font-mono text-xs font-bold text-amber-400";
+            }
+        }
+
+        // Toggle Sentinel Visibility for Developer Inspection
+        toggleSentinelBtn.addEventListener('click', () => {
+            document.body.classList.toggle('show-sentinel');
+            const isShown = document.body.classList.contains('show-sentinel');
+            sentinelBtnText.innerText = isShown ? "Hide Sentinel Line" : "Reveal Sentinel Line";
+        });
+
+        // Reset Demo State
+        resetDemoBtn.addEventListener('click', () => {
+            refreshCount = 0;
+            lastRefreshTimestamp = 0;
+            refreshCountBadge.innerText = "0 Refreshes";
+            lastRefreshTimeEl.innerText = "None";
+            badgeIntervalGuard.innerText = "READY";
+            badgeIntervalGuard.className = "text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800";
+            iconIntervalGuard.className = "fa-solid fa-circle-check text-emerald-400";
+            
+            adImpressionCounter.innerText = "1";
+            adCreativeContent.innerHTML = `
+                <div class="flex items-center justify-center gap-2 text-gam-blue font-bold text-base sm:text-lg">
+                    <i class="fa-solid fa-rectangle-ad text-xl"></i>
+                    <span>Brand Sponsor #1: Cloud Scaling Solutions</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">Premium Programmatic Leaderboard Creative • Impression #1</p>
+            `;
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
