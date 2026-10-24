@@ -329,20 +329,43 @@
         const sentinelBtnText = document.getElementById('sentinel-btn-text');
         const resetDemoBtn = document.getElementById('reset-demo-btn');
 
-        // Initialize Observers
+        // Initialize Observers & Background Tickers
         window.addEventListener('DOMContentLoaded', () => {
             setupSentinelObserver();
             setupAdViewabilityObserver();
+            setupCooldownTicker();
         });
 
         /**
+         * Background ticker to automatically reset the Interval Guard badge to READY when cooldown elapses.
+         */
+        function setupCooldownTicker() {
+            setInterval(() => {
+                if (lastRefreshTimestamp !== 0) {
+                    const now = Date.now();
+                    const timeSinceLastRefresh = now - lastRefreshTimestamp;
+                    
+                    if (timeSinceLastRefresh >= MIN_REFRESH_INTERVAL_MS) {
+                        badgeIntervalGuard.innerText = "READY";
+                        badgeIntervalGuard.className = "text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800";
+                        iconIntervalGuard.className = "fa-solid fa-circle-check text-emerald-400";
+                    } else {
+                        const remainingSecs = Math.ceil((MIN_REFRESH_INTERVAL_MS - timeSinceLastRefresh) / 1000);
+                        badgeIntervalGuard.innerText = `COOLDOWN (${remainingSecs}s)`;
+                        badgeIntervalGuard.className = "text-[10px] font-mono text-blue-400 bg-blue-950/60 px-1.5 py-0.5 rounded border border-blue-800";
+                        iconIntervalGuard.className = "fa-solid fa-hourglass-half text-blue-400";
+                    }
+                }
+            }, 500);
+        }
+
+        /**
          * 1. Sentinel Intersection Observer
-         * Tracks when the boundary between Article 1 and Article 2 enters view.
          */
         function setupSentinelObserver() {
             const observerOptions = {
-                root: null, // Viewport
-                rootMargin: '100px 0px', // Trigger slightly before exact intersection
+                root: null, 
+                rootMargin: '100px 0px', 
                 threshold: 0
             };
 
@@ -350,8 +373,6 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         updateObserverUI(true);
-                        
-                        // Execute compliant refresh check
                         attemptGAMAdRefresh();
                     } else {
                         updateObserverUI(false);
@@ -364,7 +385,6 @@
 
         /**
          * 2. Ad Viewability Intersection Observer
-         * Verifies that at least 50% of the ad unit is visible before refreshing.
          */
         function setupAdViewabilityObserver() {
             const adObserver = new IntersectionObserver((entries) => {
@@ -381,20 +401,18 @@
                         iconInView.className = "fa-solid fa-circle-exclamation text-amber-400";
                     }
                 });
-            }, { threshold: 0.5 }); // Require 50% visibility
+            }, { threshold: 0.5 });
 
             adObserver.observe(adSlotContainer);
         }
 
         /**
          * 3. Simulated Google Publisher Tag (GPT) Refresh Logic
-         * Mimics `googletag.pubads().refresh([slot])` with GAM policy checks.
          */
         function attemptGAMAdRefresh() {
             const now = Date.now();
             const timeSinceLastRefresh = now - lastRefreshTimestamp;
 
-            // Compliance Check A: Debounce / Minimum Interval Guard
             if (lastRefreshTimestamp !== 0 && timeSinceLastRefresh < MIN_REFRESH_INTERVAL_MS) {
                 const remainingSecs = Math.ceil((MIN_REFRESH_INTERVAL_MS - timeSinceLastRefresh) / 1000);
                 badgeIntervalGuard.innerText = `BLOCKED (${remainingSecs}s cooldown)`;
@@ -403,22 +421,18 @@
                 return;
             }
 
-            // Compliance Check B: Viewability Verification
             if (!isAdInView) {
                 console.warn("[GAM Policy Alert] Ad refresh suppressed: Creative is off-screen.");
                 return;
             }
 
-            // Lock trigger until cooldown expires
             lastRefreshTimestamp = now;
             refreshCount++;
 
-            // Reset Interval Guard UI Status
             badgeIntervalGuard.innerText = "COOLDOWN ACTIVE";
             badgeIntervalGuard.className = "text-[10px] font-mono text-blue-400 bg-blue-950/60 px-1.5 py-0.5 rounded border border-blue-800";
             iconIntervalGuard.className = "fa-solid fa-hourglass-half text-blue-400";
 
-            // Trigger Visual Ad Refresh (Simulates GPT dynamic fetch)
             executeGPTCommand();
         }
 
@@ -426,16 +440,13 @@
          * Executes simulated GPT refresh with visual feedback.
          */
         function executeGPTCommand() {
-            // 1. Show Shimmer Loading State on Banner
             adSlotContainer.classList.add('ad-refreshing');
             adStatusBadge.className = "absolute top-1.5 right-1.5 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-300 flex items-center gap-1";
             adStatusBadge.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Refreshing...`;
 
-            // 2. Simulate Network Delay for Auction / Creative Fetch (600ms)
             setTimeout(() => {
                 adSlotContainer.classList.remove('ad-refreshing');
                 
-                // Cycle Ad Content
                 const creative = mockCreatives[refreshCount % mockCreatives.length];
                 adCreativeContent.innerHTML = `
                     <div class="flex items-center justify-center gap-2 ${creative.color} font-bold text-base sm:text-lg">
@@ -445,11 +456,9 @@
                     <p class="text-xs text-slate-500 mt-0.5">Premium Programmatic Leaderboard Creative • Impression #${refreshCount + 1}</p>
                 `;
 
-                // Update Status Badge
                 adStatusBadge.className = "absolute top-1.5 right-1.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-300 flex items-center gap-1";
                 adStatusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Refreshed (GPT)`;
 
-                // Update Dashboard Log
                 refreshCountBadge.innerText = `${refreshCount} ${refreshCount === 1 ? 'Refresh' : 'Refreshes'}`;
                 const date = new Date();
                 lastRefreshTimeEl.innerText = date.toTimeString().split(' ')[0] + '.' + String(date.getMilliseconds()).padStart(3, '0');
@@ -457,9 +466,6 @@
             }, 600);
         }
 
-        /**
-         * Helper UI Updates for IntersectionObserver
-         */
         function updateObserverUI(isIntersecting) {
             if (isIntersecting) {
                 observerStateEl.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span> SENTINEL_INTERSECTED`;
@@ -470,14 +476,12 @@
             }
         }
 
-        // Toggle Sentinel Visibility for Developer Inspection
         toggleSentinelBtn.addEventListener('click', () => {
             document.body.classList.toggle('show-sentinel');
             const isShown = document.body.classList.contains('show-sentinel');
             sentinelBtnText.innerText = isShown ? "Hide Sentinel Line" : "Reveal Sentinel Line";
         });
 
-        // Reset Demo State
         resetDemoBtn.addEventListener('click', () => {
             refreshCount = 0;
             lastRefreshTimestamp = 0;
