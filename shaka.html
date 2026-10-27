@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shaka Player Basic Integration</title>
+  
+  <!-- 1. Load Shaka Player compiled library from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+</head>
+<body>
+
+  <div style="max-width: 800px; margin: 40px auto; text-align: center;">
+    <h2>Shaka Player Demo</h2>
+    
+    <!-- 2. Standard HTML5 Video Element -->
+    <video id="videoPlayer" width="100%" controls autoplay></video>
+  </div>
+
+  <script>
+    // Define your DASH (.mpd) or HLS (.m3u8) manifest URL
+    const manifestUri = 'https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd';
+
+    async function initApp() {
+      // Install built-in browser polyfills
+      shaka.polyfill.installAll();
+
+      // Check if the browser supports Media Source Extensions & EME
+      if (shaka.Player.isBrowserSupported()) {
+        const videoElement = document.getElementById('videoPlayer');
+        
+        // Create the Shaka Player instance
+        const player = new shaka.Player(videoElement);
+
+        // Optional: Listen for error events
+        player.addEventListener('error', onErrorEvent);
+
+        try {
+          // Load the video manifest
+          await player.load(manifestUri);
+          console.log('Video successfully loaded and ready for playback!');
+        } catch (e) {
+          onError(e);
+        }
+      } else {
+        console.error('Browser not supported for Shaka Player.');
+      }
+    }
+
+    function onErrorEvent(event) {
+      onError(event.detail);
+    }
+
+    function onError(error) {
+      console.error('Error code', error.code, 'object', error);
+    }
+
+    // Run initialization when the DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+
+</body>
+</html>
