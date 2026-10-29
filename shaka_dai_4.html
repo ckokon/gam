@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shaka Player VAST Ad Integration</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/shaka-player@4.12.5/dist/controls.css">
+    <!--link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/5.3.2/controls.css"
+        integrity="sha512-Byjxqf2s7x+w/9MMtJ7HiJYaY4ekVedG39IZY8YA8vVJ4cIZcebg0qyNbKkFXGBPVWev3OgSaT5UyUaRFLzFwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"-->
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #141414;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .player-container {
+            width: 800px;
+            max-width: 100%;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+        }
+
+        .controls-row {
+            margin-top: 15px;
+            width: 800px;
+            max-width: 100%;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background-color: #ff6600;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #e55b00;
+        }
+
+        #status {
+            margin-top: 10px;
+            color: #aaa;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="player-container">
+        <!-- Shaka Player UI Container -->
+        <div data-shaka-player-container>
+            <video data-shaka-player id="video"
+                poster="https://shaka-player-demo.appspot.com/assets/poster.jpg"></video>
+        </div>
+    </div>
+
+    <div class="controls-row">
+        <button id="playAdBtn">Play Ad Interstitial</button>
+    </div>
+    <div id="status">Status: Initializing...</div>
+
+    <!-- Shaka Player UI Compiled Library -->
+    <script src="https://unpkg.com/shaka-player@4.12.5/dist/shaka-player.ui.js"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.12.15/shaka-player.ui.js"
+        integrity="sha512-7f26/YyM0zy7R3Hw4b8whGixmBoHoOvStA/iKnCmRIhXVETeguVh2Xkuywl2D0BXdXow4ugLgJdszPySTjCvdQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>-->
+
+
+    <script>
+        async function initApp() {
+            shaka.polyfill.installAll();
+
+            if (!shaka.Player.isBrowserSupported()) {
+                document.getElementById('status').innerText = 'Browser not supported!';
+                return;
+            }
+
+            const video = document.getElementById('video');
+            const ui = video['ui'];
+            const controls = ui.getControls();
+            const player = controls.getPlayer();
+            const adManager = player.getAdManager();
+
+            // Event Listeners for debugging status
+            player.addEventListener('error', (event) => {
+                console.error('Shaka Error:', event.detail);
+                document.getElementById('status').innerText = 'Error: ' + event.detail.message;
+            });
+
+            // Pre-load the stream source immediately so the built-in play button works
+            const videoUri = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
+            try {
+                await player.load(videoUri);
+                document.getElementById('status').innerText = 'Status: Ready. Click play or the ad button!';
+            } catch (error) {
+                console.error('Error pre-loading video:', error);
+                document.getElementById('status').innerText = 'Status: Error loading stream.';
+            }
+
+            // Base VAST ad URL up to the correlator parameter
+            //const baseVastUrl = 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dlinear';
+            const baseVastUrl = 'https://pubads.g.doubleclick.net/gampad/ads?iu=/137679306/vast_video&description_url=http%3A%2F%2Fpeach.blender.org&tfcd=0&npa=0&sz=1920x1080&gdfp_req=1&unviewed_position_start=1&output=xml_vast3&env=vp&impl=s';
+            //const baseVastUrl = 'https://tv.springserve.com/vast/697819?w=1920&h=1080&pod_ad_slots=1';
+            
+            // Trigger Ad Interstitial on button click with epoch timestamp for 'correlator', 'scor' and 'cb'
+            document.getElementById('playAdBtn').addEventListener('click', async () => {
+                try {
+                    const epochTime = Date.now();
+                    // Inject epochTime into correlator, scor
+                    const uniqueVastUrl = `${baseVastUrl}&correlator=${epochTime}&scor=${epochTime}`;
+
+                    // Inject epochTime into cb
+                    //const uniqueVastUrl = `${baseVastUrl}&cb=${epochTime}`;
+
+                    // Console log the final VAST URL
+                    console.log('Final VAST URL:', uniqueVastUrl);
+
+                    await adManager.addAdUrlInterstitial(uniqueVastUrl);
+
+                    document.getElementById('status').innerText = `Status: Ad played (correlator/scor/cb: ${epochTime}).`;
+                } catch (e) {
+                    console.error('Ad error:', e);
+                    document.getElementById('status').innerText = 'Status: Ad playback failed.';
+                }
+            });
+        }
+
+        document.addEventListener('shaka-ui-loaded', initApp);
+    </script>
+</body>
+
+</html>
