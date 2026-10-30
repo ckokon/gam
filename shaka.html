@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -73,6 +74,10 @@
       background: #28a745;
       cursor: pointer;
       white-space: nowrap;
+    }
+
+    button.secondary-btn {
+      background: #6c757d;
     }
 
     button.ad-button {
@@ -185,35 +190,24 @@
     <div class="field">
       <label for="video-url">HLS / MPEG-DASH Stream URL</label>
       <div class="input-group">
-        <input
-          type="url"
-          id="video-url"
-          value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
-          placeholder="Enter stream URL"
-        >
-        <button id="load-button" type="button">Play Video</button>
+        <input type="url" id="video-url" value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+          placeholder="Enter stream URL">
+        <button id="load-only-button" class="secondary-btn" type="button">Load Only</button>
+        <button id="load-play-button" type="button">Load &amp; Play</button>
       </div>
     </div>
 
     <div class="field">
       <label for="vast-url">VAST Ad Tag URL</label>
       <div class="input-group">
-        <input
-          type="url"
-          id="vast-url"
-          value="https://tv.springserve.com/vast/886067?w=1920&h=1080"
-          placeholder="Enter VAST URL"
-        >
+        <input type="url" id="vast-url" value="https://pubads.g.doubleclick.net/gampad/ads?iu=/137679306/vast_video&description_url=http%3A%2F%2Fpeach.blender.org&url=http%3A%2F%2Fpeach.blender.org&tfcd=0&npa=0&sz=1920x1080&gdfp_req=1&unviewed_position_start=1&output=xml_vast3&env=vp&impl=s&plcmt=1"
+          placeholder="Enter VAST URL">
         <button id="ad-button" class="ad-button" type="button">Play Ad</button>
       </div>
     </div>
 
     <div class="video-container" id="video-container">
-      <video
-        id="video"
-        playsinline
-        preload="auto"
-      ></video>
+      <video id="video" playsinline preload="auto"></video>
       <div id="ad-container"></div>
     </div>
 
@@ -221,26 +215,10 @@
     <div class="player-controls">
       <button id="play-pause-button" type="button">Play</button>
       <span id="current-time">0:00</span>
-      <input
-        type="range"
-        id="seek-bar"
-        min="0"
-        max="100"
-        value="0"
-        step="0.1"
-        aria-label="Seek video"
-      >
+      <input type="range" id="seek-bar" min="0" max="100" value="0" step="0.1" aria-label="Seek video">
       <span id="duration">0:00</span>
       <button id="mute-button" type="button">Mute</button>
-      <input
-        type="range"
-        id="volume-bar"
-        min="0"
-        max="1"
-        value="1"
-        step="0.05"
-        aria-label="Volume control"
-      >
+      <input type="range" id="volume-bar" min="0" max="1" value="1" step="0.05" aria-label="Volume control">
     </div>
 
     <div id="status" role="status" aria-live="polite">
@@ -260,14 +238,14 @@
     let adRequestInProgress = false;
     let pendingAdRequest = false;
     let isAdPlaying = false;
-    let adContainerInitialized = false; // Tracks if AdDisplayContainer has been initialized
 
     const video = document.getElementById("video");
     const adContainer = document.getElementById("ad-container");
     const videoContainer = document.getElementById("video-container");
     const statusElement = document.getElementById("status");
     const adButton = document.getElementById("ad-button");
-    const loadButton = document.getElementById("load-button");
+    const loadOnlyButton = document.getElementById("load-only-button");
+    const loadPlayButton = document.getElementById("load-play-button");
 
     const playPauseButton = document.getElementById("play-pause-button");
     const muteButton = document.getElementById("mute-button");
@@ -284,6 +262,11 @@
     function setAdBusy(busy) {
       adRequestInProgress = busy;
       adButton.disabled = busy;
+    }
+
+    function setStreamButtonsBusy(busy) {
+      loadOnlyButton.disabled = busy;
+      loadPlayButton.disabled = busy;
     }
 
     function formatTime(seconds) {
@@ -418,7 +401,84 @@
         setStatus("Stream loaded.");
       });
 
+      video.addEventListener("ended", () => {
+        if (adsLoader) {
+          adsLoader.contentComplete();
+        }
+      });
+
+      initialized = true;
+      setStatus("Player initialized. Choose Load Only or Load & Play.");
+    }
+
+    async function loadStream(autoPlay = false) {
+      const streamUrl = document.getElementById("video-url").value.trim();
+
+      if (!streamUrl) {
+        alert("Please enter a stream URL.");
+        return;
+      }
+
+      if (adRequestInProgress || pendingAdRequest || isAdPlaying) {
+        setStatus("Wait until the ad request or playback finishes before changing streams.");
+        return;
+      }
+
+      setStreamButtonsBusy(true);
+      streamLoaded = false;
+
+      try {
+        if (!initialized) {
+          await initApp();
+        }
+
+        destroyAdsManager();
+
+        await player.load(streamUrl);
+
+        streamLoaded = true;
+
+        if (autoPlay) {
+          setStatus("Stream loaded successfully. Starting playback...");
+          await video.play();
+          setStatus("Playback started.");
+        } else {
+          setStatus("Stream loaded successfully. Ready.");
+        }
+      } catch (error) {
+        console.error("Stream loading/playback error:", error);
+        setStatus("Failed to load or play stream: " + error.message);
+      } finally {
+        setStreamButtonsBusy(false);
+      }
+    }
+
+    // Function to completely reset and recreate AdsLoader and AdDisplayContainer per request
+    function resetAndInitAdsLoader() {
+      if (adsLoader) {
+        try {
+          adsLoader.removeEventListener(
+            google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
+            onAdsManagerLoaded
+          );
+          adsLoader.removeEventListener(
+            google.ima.AdErrorEvent.Type.AD_ERROR,
+            onAdError
+          );
+        } catch (e) {}
+        adsLoader = null;
+      }
+
+      if (adDisplayContainer) {
+        try {
+          adDisplayContainer.destroy();
+        } catch (e) {}
+        adDisplayContainer = null;
+      }
+
       adDisplayContainer = new google.ima.AdDisplayContainer(adContainer, video);
+      adDisplayContainer.initialize();
+
       adsLoader = new google.ima.AdsLoader(adDisplayContainer);
 
       adsLoader.addEventListener(
@@ -432,59 +492,12 @@
         onAdError,
         false
       );
-
-      video.addEventListener("ended", () => {
-        if (adsLoader) {
-          adsLoader.contentComplete();
-        }
-      });
-
-      initialized = true;
-      setStatus("Player initialized. Enter a stream URL and click Play Video.");
-    }
-
-    async function loadStream() {
-      const streamUrl = document.getElementById("video-url").value.trim();
-
-      if (!streamUrl) {
-        alert("Please enter a stream URL.");
-        return;
-      }
-
-      if (adRequestInProgress || pendingAdRequest || isAdPlaying) {
-        setStatus("Wait until the ad request or playback finishes before changing streams.");
-        return;
-      }
-
-      loadButton.disabled = true;
-      streamLoaded = false;
-
-      try {
-        if (!initialized) {
-          await initApp();
-        }
-
-        destroyAdsManager();
-
-        await player.load(streamUrl);
-
-        streamLoaded = true;
-        setStatus("Stream loaded successfully. Starting playback...");
-        
-        await video.play();
-        setStatus("Playback started.");
-      } catch (error) {
-        console.error("Stream loading/playback error:", error);
-        setStatus("Failed to load or play stream: " + error.message);
-      } finally {
-        loadButton.disabled = false;
-      }
     }
 
     function playVastAd() {
       const baseUrl = document.getElementById("vast-url").value.trim();
 
-      if (!initialized || !adsLoader) {
+      if (!initialized) {
         setStatus("Player is initializing. Please try again.");
         return;
       }
@@ -513,7 +526,7 @@
           throw new Error("Only HTTP and HTTPS URLs are supported.");
         }
 
-        url.searchParams.set("cb", Date.now().toString());
+        url.searchParams.set("correlator", Date.now().toString());
         vastTagUrl = url.toString();
       } catch (error) {
         alert("Invalid VAST URL: " + error.message);
@@ -523,11 +536,8 @@
       console.log("[VAST Request] Calling VAST URL:", vastTagUrl);
 
       try {
-        // Initialize AdDisplayContainer ONLY ONCE per session
-        if (!adContainerInitialized) {
-          adDisplayContainer.initialize();
-          adContainerInitialized = true;
-        }
+        // Re-initialize a fresh ads loader instance for this request
+        resetAndInitAdsLoader();
 
         destroyAdsManager();
         setAdBusy(true);
@@ -697,7 +707,8 @@
       }
     });
 
-    loadButton.addEventListener("click", loadStream);
+    loadOnlyButton.addEventListener("click", () => loadStream(false));
+    loadPlayButton.addEventListener("click", () => loadStream(true));
     adButton.addEventListener("click", playVastAd);
 
     window.addEventListener("beforeunload", () => {
@@ -729,4 +740,5 @@
     });
   </script>
 </body>
+
 </html>
