@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shaka Player and IMA SDK</title>
+
+  <!-- Shaka Player -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+
+  <!-- Google IMA SDK -->
+  <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 30px 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 850px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 26px;
+      margin-bottom: 25px;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="url"] {
+      flex: 1;
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid #444;
+      border-radius: 5px;
+      background: #2a2a2a;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 12px 16px;
+      border: 0;
+      border-radius: 5px;
+      color: white;
+      background: #28a745;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button.secondary-btn {
+      background: #6c757d;
+    }
+
+    button.ad-button {
+      background: #007bff;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .video-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      margin-top: 20px;
+      overflow: hidden;
+      background: #000;
+      border-radius: 8px;
+    }
+
+    #video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    #ad-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+
+    /* Custom controls are outside and below the video. */
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px;
+      background: #2a2a2a;
+      border-radius: 6px;
+    }
+
+    .player-controls button {
+      padding: 8px 12px;
+      background: #444;
+      flex-shrink: 0;
+    }
+
+    .player-controls span {
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    #seek-bar {
+      flex: 1;
+      min-width: 0;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    #volume-bar {
+      width: 80px;
+      cursor: pointer;
+    }
+
+    #status {
+      min-height: 22px;
+      margin-top: 12px;
+      color: #ccc;
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 600px) {
+      .input-group {
+        flex-direction: column;
+      }
+
+      .input-group button {
+        width: 100%;
+      }
+
+      .player-controls {
+        gap: 6px;
+        padding: 8px;
+        flex-wrap: wrap;
+      }
+
+      .player-controls button {
+        padding: 8px;
+        font-size: 12px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <h1>Shaka Player and IMA SDK</h1>
+
+    <div class="field">
+      <label for="video-url">HLS / MPEG-DASH Stream URL</label>
+      <div class="input-group">
+        <input type="url" id="video-url" value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+          placeholder="Enter stream URL">
+        <button id="load-only-button" class="secondary-btn" type="button">Load Only</button>
+        <button id="load-play-button" type="button">Load &amp; Play</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="vast-url">VAST Ad Tag URL</label>
+      <div class="input-group">
+        <input type="url" id="vast-url" value="https://pubads.g.doubleclick.net/gampad/ads?iu=/137679306/vast_video&description_url=http%3A%2F%2Fpeach.blender.org&url=http%3A%2F%2Fpeach.blender.org&tfcd=0&npa=0&sz=1920x1080&gdfp_req=1&unviewed_position_start=1&output=xml_vast3&env=vp&impl=s&plcmt=1"
+          placeholder="Enter VAST URL">
+        <button id="ad-button" class="ad-button" type="button">Play Ad</button>
+      </div>
+    </div>
+
+    <div class="video-container" id="video-container">
+      <video id="video" playsinline preload="auto"></video>
+      <div id="ad-container"></div>
+    </div>
+
+    <!-- Player controls below the video -->
+    <div class="player-controls">
+      <button id="play-pause-button" type="button">Play</button>
+      <span id="current-time">0:00</span>
+      <input type="range" id="seek-bar" min="0" max="100" value="0" step="0.1" aria-label="Seek video">
+      <span id="duration">0:00</span>
+      <button id="mute-button" type="button">Mute</button>
+      <input type="range" id="volume-bar" min="0" max="1" value="1" step="0.05" aria-label="Volume control">
+    </div>
+
+    <div id="status" role="status" aria-live="polite">
+      Initializing player...
+    </div>
+  </main>
+
+  <script>
+    let player = null;
+
+    let adDisplayContainer = null;
+    let adsLoader = null;
+    let adsManager = null;
+
+    let initialized = false;
+    let streamLoaded = false;
+    let adRequestInProgress = false;
+    let pendingAdRequest = false;
+    let isAdPlaying = false;
+
+    const video = document.getElementById("video");
+    const adContainer = document.getElementById("ad-container");
+    const videoContainer = document.getElementById("video-container");
+    const statusElement = document.getElementById("status");
+    const adButton = document.getElementById("ad-button");
+    const loadOnlyButton = document.getElementById("load-only-button");
+    const loadPlayButton = document.getElementById("load-play-button");
+
+    const playPauseButton = document.getElementById("play-pause-button");
+    const muteButton = document.getElementById("mute-button");
+    const seekBar = document.getElementById("seek-bar");
+    const volumeBar = document.getElementById("volume-bar");
+    const currentTimeDisplay = document.getElementById("current-time");
+    const durationDisplay = document.getElementById("duration");
+
+    function setStatus(message) {
+      statusElement.textContent = message;
+      console.log("[Player]", message);
+    }
+
+    function setAdBusy(busy) {
+      adRequestInProgress = busy;
+      adButton.disabled = busy;
+    }
+
+    function setStreamButtonsBusy(busy) {
+      loadOnlyButton.disabled = busy;
+      loadPlayButton.disabled = busy;
+    }
+
+    function formatTime(seconds) {
+      if (!Number.isFinite(seconds) || seconds < 0) {
+        return "0:00";
+      }
+
+      const minutes = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${minutes}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function updatePlayButton() {
+      playPauseButton.textContent = video.paused ? "Play" : "Pause";
+    }
+
+    function updateMuteButton() {
+      if (video.muted || video.volume === 0) {
+        muteButton.textContent = "Unmute";
+      } else {
+        muteButton.textContent = "Mute";
+      }
+    }
+
+    playPauseButton.addEventListener("click", async () => {
+      if (isAdPlaying) {
+        setStatus("Use the ad's own controls while the ad is playing.");
+        return;
+      }
+
+      if (video.paused) {
+        try {
+          await video.play();
+        } catch (error) {
+          console.error("Playback error:", error);
+          setStatus("Could not start playback. Press Play again.");
+        }
+      } else {
+        video.pause();
+      }
+    });
+
+    video.addEventListener("play", updatePlayButton);
+    video.addEventListener("pause", updatePlayButton);
+
+    video.addEventListener("loadedmetadata", () => {
+      durationDisplay.textContent = formatTime(video.duration);
+    });
+
+    video.addEventListener("durationchange", () => {
+      durationDisplay.textContent = formatTime(video.duration);
+    });
+
+    video.addEventListener("timeupdate", () => {
+      currentTimeDisplay.textContent = formatTime(video.currentTime);
+
+      if (!isAdPlaying && Number.isFinite(video.duration) && video.duration > 0) {
+        seekBar.value = (video.currentTime / video.duration) * 100;
+      }
+    });
+
+    seekBar.addEventListener("input", () => {
+      if (isAdPlaying) {
+        return;
+      }
+
+      if (Number.isFinite(video.duration) && video.duration > 0) {
+        video.currentTime = (Number(seekBar.value) / 100) * video.duration;
+      }
+    });
+
+    volumeBar.addEventListener("input", () => {
+      const vol = Number(volumeBar.value);
+      video.volume = vol;
+      video.muted = (vol === 0);
+
+      if (adsManager) {
+        if (video.muted) {
+          adsManager.setVolume(0);
+        } else {
+          adsManager.setVolume(vol);
+        }
+      }
+
+      updateMuteButton();
+    });
+
+    muteButton.addEventListener("click", () => {
+      video.muted = !video.muted;
+
+      if (adsManager) {
+        if (video.muted) {
+          adsManager.setVolume(0);
+        } else {
+          adsManager.setVolume(video.volume);
+        }
+      }
+
+      updateMuteButton();
+    });
+
+    async function initApp() {
+      if (player) {
+        return;
+      }
+
+      shaka.polyfill.installAll();
+
+      if (!shaka.Player.isBrowserSupported()) {
+        throw new Error("This browser does not support Shaka Player.");
+      }
+
+      if (!window.google || !google.ima) {
+        throw new Error("Google IMA SDK failed to load.");
+      }
+
+      player = new shaka.Player(video);
+
+      player.addEventListener("error", (event) => {
+        console.error("Shaka error:", event.detail);
+        streamLoaded = false;
+        setStatus("Stream playback error. Check the console.");
+      });
+
+      player.addEventListener("loading", () => {
+        streamLoaded = false;
+        setStatus("Loading stream...");
+      });
+
+      player.addEventListener("loaded", () => {
+        streamLoaded = true;
+        setStatus("Stream loaded.");
+      });
+
+      video.addEventListener("ended", () => {
+        if (adsLoader) {
+          adsLoader.contentComplete();
+        }
+      });
+
+      initialized = true;
+      setStatus("Player initialized. Choose Load Only or Load & Play.");
+    }
+
+    async function loadStream(autoPlay = false) {
+      const streamUrl = document.getElementById("video-url").value.trim();
+
+      if (!streamUrl) {
+        alert("Please enter a stream URL.");
+        return;
+      }
+
+      if (adRequestInProgress || pendingAdRequest || isAdPlaying) {
+        setStatus("Wait until the ad request or playback finishes before changing streams.");
+        return;
+      }
+
+      setStreamButtonsBusy(true);
+      streamLoaded = false;
+
+      try {
+        if (!initialized) {
+          await initApp();
+        }
+
+        destroyAdsManager();
+
+        await player.load(streamUrl);
+
+        streamLoaded = true;
+
+        if (autoPlay) {
+          setStatus("Stream loaded successfully. Starting playback...");
+          await video.play();
+          setStatus("Playback started.");
+        } else {
+          setStatus("Stream loaded successfully. Ready.");
+        }
+      } catch (error) {
+        console.error("Stream loading/playback error:", error);
+        setStatus("Failed to load or play stream: " + error.message);
+      } finally {
+        setStreamButtonsBusy(false);
+      }
+    }
+
+    // Function to completely reset and recreate AdsLoader and AdDisplayContainer per request
+    function resetAndInitAdsLoader() {
+      if (adsLoader) {
+        try {
+          adsLoader.removeEventListener(
+            google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
+            onAdsManagerLoaded
+          );
+          adsLoader.removeEventListener(
+            google.ima.AdErrorEvent.Type.AD_ERROR,
+            onAdError
+          );
+        } catch (e) {}
+        adsLoader = null;
+      }
+
+      if (adDisplayContainer) {
+        try {
+          adDisplayContainer.destroy();
+        } catch (e) {}
+        adDisplayContainer = null;
+      }
+
+      adDisplayContainer = new google.ima.AdDisplayContainer(adContainer, video);
+      adDisplayContainer.initialize();
+
+      adsLoader = new google.ima.AdsLoader(adDisplayContainer);
+
+      adsLoader.addEventListener(
+        google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
+        onAdsManagerLoaded,
+        false
+      );
+
+      adsLoader.addEventListener(
+        google.ima.AdErrorEvent.Type.AD_ERROR,
+        onAdError,
+        false
+      );
+    }
+
+    function playVastAd() {
+      const baseUrl = document.getElementById("vast-url").value.trim();
+
+      if (!initialized) {
+        setStatus("Player is initializing. Please try again.");
+        return;
+      }
+
+      if (!streamLoaded) {
+        setStatus("Please load a stream before playing an ad.");
+        return;
+      }
+
+      if (!baseUrl) {
+        alert("Please enter a VAST ad URL.");
+        return;
+      }
+
+      if (adRequestInProgress || pendingAdRequest || isAdPlaying) {
+        setStatus("An ad request or playback is already in progress.");
+        return;
+      }
+
+      let vastTagUrl;
+
+      try {
+        const url = new URL(baseUrl);
+
+        if (!["http:", "https:"].includes(url.protocol)) {
+          throw new Error("Only HTTP and HTTPS URLs are supported.");
+        }
+
+        url.searchParams.set("correlator", Date.now().toString());
+        vastTagUrl = url.toString();
+      } catch (error) {
+        alert("Invalid VAST URL: " + error.message);
+        return;
+      }
+
+      console.log("[VAST Request] Calling VAST URL:", vastTagUrl);
+
+      try {
+        // Re-initialize a fresh ads loader instance for this request
+        resetAndInitAdsLoader();
+
+        destroyAdsManager();
+        setAdBusy(true);
+        pendingAdRequest = true;
+
+        const request = new google.ima.AdsRequest();
+        request.adTagUrl = vastTagUrl;
+        request.linearAdSlotWidth = videoContainer.clientWidth;
+        request.linearAdSlotHeight = videoContainer.clientHeight;
+        request.nonLinearAdSlotWidth = videoContainer.clientWidth;
+        request.nonLinearAdSlotHeight = Math.round(videoContainer.clientHeight / 3);
+        request.setAdWillAutoPlay(false);
+        request.setAdWillPlayMuted(video.muted);
+
+        setStatus("Requesting VAST ad...");
+        adsLoader.requestAds(request);
+      } catch (error) {
+        console.error("Ad request error:", error);
+        pendingAdRequest = false;
+        setAdBusy(false);
+        setStatus("Could not request ad: " + error.message);
+      }
+    }
+
+    function onAdsManagerLoaded(event) {
+      pendingAdRequest = false;
+
+      try {
+        adsManager = event.getAdsManager(video);
+
+        if (video.muted) {
+          adsManager.setVolume(0);
+        } else {
+          adsManager.setVolume(video.volume);
+        }
+
+        adsManager.addEventListener(
+          google.ima.AdErrorEvent.Type.AD_ERROR,
+          onAdError
+        );
+
+        adsManager.addEventListener(
+          google.ima.AdEvent.Type.CONTENT_PAUSE_REQUESTED,
+          () => {
+            isAdPlaying = true;
+            seekBar.disabled = true;
+            playPauseButton.disabled = true;
+            video.pause();
+            setStatus("Ad playing...");
+          }
+        );
+
+        adsManager.addEventListener(
+          google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED,
+          () => {
+            resumeContent();
+          }
+        );
+
+        adsManager.addEventListener(
+          google.ima.AdEvent.Type.STARTED,
+          () => {
+            isAdPlaying = true;
+            setStatus("Ad started.");
+          }
+        );
+
+        adsManager.addEventListener(
+          google.ima.AdEvent.Type.COMPLETE,
+          () => {
+            setStatus("Ad completed.");
+          }
+        );
+
+        adsManager.addEventListener(
+          google.ima.AdEvent.Type.SKIPPED,
+          () => {
+            setStatus("Ad skipped.");
+          }
+        );
+
+        adsManager.addEventListener(
+          google.ima.AdEvent.Type.ALL_ADS_COMPLETED,
+          () => {
+            finishAd("Ad finished. Click Play Ad to play another.");
+          }
+        );
+
+        adsManager.init(
+          videoContainer.clientWidth,
+          videoContainer.clientHeight,
+          google.ima.ViewMode.NORMAL
+        );
+
+        adsManager.start();
+      } catch (error) {
+        console.error("IMA AdsManager error:", error);
+        finishAd("Unable to start ad playback.");
+      }
+    }
+
+    function onAdError(event) {
+      const error = event.getError ? event.getError() : event;
+      console.error("IMA ad error:", error);
+
+      finishAd("Ad failed or no playable ad was returned. You can try again.");
+    }
+
+    function finishAd(message) {
+      pendingAdRequest = false;
+      isAdPlaying = false;
+      seekBar.disabled = false;
+      playPauseButton.disabled = false;
+
+      destroyAdsManager();
+      setAdBusy(false);
+      updatePlayButton();
+      setStatus(message);
+    }
+
+    function destroyAdsManager() {
+      if (adsManager) {
+        try {
+          adsManager.destroy();
+        } catch (error) {
+          console.warn("AdsManager cleanup error:", error);
+        }
+
+        adsManager = null;
+      }
+    }
+
+    async function resumeContent() {
+      isAdPlaying = false;
+      seekBar.disabled = false;
+      playPauseButton.disabled = false;
+
+      destroyAdsManager();
+      setAdBusy(false);
+
+      setStatus("Resuming content...");
+
+      try {
+        await video.play();
+        setStatus("Content resumed. Click Play Ad to replay an ad.");
+      } catch (error) {
+        console.warn("Content resume requires user interaction:", error);
+        setStatus("Ad finished. Press Play below the video to resume content.");
+      }
+
+      updatePlayButton();
+    }
+
+    window.addEventListener("resize", () => {
+      if (!adsManager) {
+        return;
+      }
+
+      try {
+        adsManager.resize(
+          videoContainer.clientWidth,
+          videoContainer.clientHeight,
+          google.ima.ViewMode.NORMAL
+        );
+      } catch (error) {
+        console.warn("Ad resize error:", error);
+      }
+    });
+
+    loadOnlyButton.addEventListener("click", () => loadStream(false));
+    loadPlayButton.addEventListener("click", () => loadStream(true));
+    adButton.addEventListener("click", playVastAd);
+
+    window.addEventListener("beforeunload", () => {
+      destroyAdsManager();
+
+      if (adsLoader) {
+        try {
+          adsLoader.destroy();
+        } catch (error) {
+          console.warn("AdsLoader cleanup error:", error);
+        }
+
+        adsLoader = null;
+      }
+
+      if (player) {
+        player.destroy();
+        player = null;
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        await initApp();
+      } catch (error) {
+        console.error("Initialization error:", error);
+        setStatus("Initialization failed: " + error.message);
+      }
+    });
+  </script>
+</body>
+
+</html>
