@@ -599,6 +599,10 @@
       console.log("[VAST Request] Calling VAST URL:", vastTagUrl);
 
       try {
+        // Clear companion slots immediately upon clicking Play Ad
+        document.getElementById("companion-left").innerHTML = "300x600 Ad Slot";
+        document.getElementById("companion-right").innerHTML = "300x250 Ad Slot";
+
         resetAndInitAdsLoader();
 
         destroyAdsManager();
@@ -665,7 +669,6 @@
             isAdPlaying = true;
             setStatus("Ad started.");
 
-            // Manually fetch and render companion ads via Ad API when ad starts
             const ad = adEvent.getAd();
             if (ad) {
               const leftCompanions = ad.getCompanionAds(300, 600);
@@ -727,10 +730,6 @@
       isAdPlaying = false;
       seekBar.disabled = false;
       playPauseButton.disabled = false;
-
-      // Reset companion slots back to placeholder text when ad finishes
-      document.getElementById("companion-left").innerHTML = "300x600 Ad Slot";
-      document.getElementById("companion-right").innerHTML = "300x250 Ad Slot";
 
       destroyAdsManager();
       setAdBusy(false);
