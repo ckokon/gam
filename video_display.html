@@ -201,6 +201,7 @@
         flex-direction: column;
         align-items: center;
       }
+
       .companion-ad {
         width: 100%;
         max-width: 300px;
@@ -241,8 +242,7 @@
     <div class="field">
       <label for="video-url">HLS / MPEG-DASH Stream URL</label>
       <div class="input-group">
-        <input type="url" id="video-url" value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
-          placeholder="Enter stream URL">
+        <input type="url" id="video-url" placeholder="Enter stream URL">
         <button id="load-only-button" class="secondary-btn" type="button">Load Only</button>
         <button id="load-play-button" type="button">Load &amp; Play</button>
       </div>
@@ -251,9 +251,7 @@
     <div class="field">
       <label for="vast-url">VAST Ad Tag URL</label>
       <div class="input-group">
-        <input type="url" id="vast-url"
-          value="https://pubads.g.doubleclick.net/gampad/ads?iu=/137679306/vast_video&description_url=http%3A%2F%2Fpeach.blender.org&url=http%3A%2F%2Fpeach.blender.org&tfcd=0&npa=0&sz=1920x1080|1280x720&ciu_szs=300x600,300x250&gdfp_req=1&unviewed_position_start=1&output=xml_vast3&env=vp&impl=s&plcmt=1"
-          placeholder="Enter VAST URL">
+        <input type="url" id="vast-url" placeholder="Enter VAST URL">
         <button id="ad-button" class="ad-button" type="button">Play Ad</button>
       </div>
     </div>
@@ -317,6 +315,19 @@
     const volumeBar = document.getElementById("volume-bar");
     const currentTimeDisplay = document.getElementById("current-time");
     const durationDisplay = document.getElementById("duration");
+
+    document.getElementById("video-url").value = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+
+    document.getElementById("vast-url").value =
+      "https://pubads.g.doubleclick.net/gampad/ads?" +
+      "iu=/137679306/vast_video&" +
+      "description_url=http%3A%2F%2Fpeach.blender.org&" +
+      "url=http%3A%2F%2Fpeach.blender.org&" +
+      "tfcd=0&npa=0&gdfp_req=1&" +
+      "sz=1920x1080|1280x720&" +
+      "ciu_szs=300x600,300x250&" +
+      "pmad=3&pmxd=90000&pmnd=1000&" +
+      "unviewed_position_start=1&output=xml_vast3&env=vp&impl=s&plcmt=1";
 
     function setStatus(message) {
       statusElement.textContent = message;
@@ -668,6 +679,10 @@
           (adEvent) => {
             isAdPlaying = true;
             setStatus("Ad started.");
+
+            // Clear slots first so old companions don't linger
+            document.getElementById("companion-left").innerHTML = "300x600 Ad Slot";
+            document.getElementById("companion-right").innerHTML = "300x250 Ad Slot";
 
             const ad = adEvent.getAd();
             if (ad) {
