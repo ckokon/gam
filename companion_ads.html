@@ -284,8 +284,8 @@
 
             <!-- Right Column containing two 300x250 Companion Ad Slots -->
             <div class="right-sidebar">
-                <div id="companion-right" class="companion-ad">300x250 Ad Slot</div>
-                <div id="companion-right-2" class="companion-ad">300x250 Ad Slot</div>
+                <div id="companion-right" class="companion-ad">300x250 Ad Slot 1</div>
+                <div id="companion-right-2" class="companion-ad">300x250 Ad Slot 2</div>
             </div>
         </div>
         <div id="status" role="status" aria-live="polite"> Initializing player... </div>
@@ -324,7 +324,7 @@
             "url=http%3A%2F%2Fpeach.blender.org&" +
             "tfcd=0&npa=0&gdfp_req=1&" +
             "sz=1920x1080|1280x720&" +
-            "ciu_szs=300x600,300x250,300x251,728x90&" +
+            "ciu_szs=300x600,300x250,300x250,728x90&" +
             "pmad=3&pmxd=90000&pmnd=1000&" +
             "unviewed_position_start=1&output=xml_vast3&env=vp&impl=s&plcmt=1";
 
@@ -364,8 +364,8 @@
 
         function resetCompanionSlots() {
             document.getElementById("companion-left").innerHTML = "300x600 Ad Slot";
-            document.getElementById("companion-right").innerHTML = "300x250 Ad Slot";
-            document.getElementById("companion-right-2").innerHTML = "300x250 Ad Slot";
+            document.getElementById("companion-right").innerHTML = "300x250 Ad Slot 1";
+            document.getElementById("companion-right-2").innerHTML = "300x250 Ad Slot 2";
             document.getElementById("companion-bottom").innerHTML = "728x90 Ad Slot";
         }
 
@@ -588,16 +588,16 @@
                             document.getElementById("companion-left").innerHTML = leftCompanions[0].getContent();
                         }
 
-                        // 2. First Right Companion (300x250)
+                        // 2 & 3. Two Distinct 300x250 Right Companions
                         const rightCompanions = ad.getCompanionAds(300, 250);
                         if (rightCompanions && rightCompanions.length > 0) {
+                            // Assign the first distinct companion ad to slot 1
                             document.getElementById("companion-right").innerHTML = rightCompanions[0].getContent();
-                        }
 
-                        // 3. Second Right Companion (300x251 workaround size)
-                        const rightCompanions2 = ad.getCompanionAds(300, 251);
-                        if (rightCompanions2 && rightCompanions2.length > 0) {
-                            document.getElementById("companion-right-2").innerHTML = rightCompanions2[0].getContent();
+                            // Assign the second distinct companion ad to slot 2 if available
+                            if (rightCompanions.length > 1) {
+                                document.getElementById("companion-right-2").innerHTML = rightCompanions[1].getContent();
+                            }
                         }
 
                         // 4. Bottom Companion (728x90)
