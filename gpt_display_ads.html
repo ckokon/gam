@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
-
+    
     <!-- Google Publisher Tag (GPT) Script -->
     <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
     <script>
@@ -18,9 +17,11 @@
         let gptSlot = null;
 
         googletag.cmd.push(function () {
-            // Configure global GPT settings if needed
-            googletag.pubads().enableSingleRequest();
-            googletag.pubads().collapseEmptyDivs();
+            // Configure global GPT settings using the modern setConfig API (clears deprecation warnings)
+            googletag.setConfig({
+                singleRequest: true,
+                collapseDiv: 'ON_NO_FILL'
+            });
             googletag.enableServices();
         });
     </script>
@@ -48,7 +49,6 @@
         }
     </style>
 </head>
-
 <body>
     <div class="container-fluid bg-dark py-2">
         <span class="text-white align-middle fs-2 ms-2">Google Ad Manager Display Ad</span>
@@ -72,7 +72,7 @@
                 <div class="container border border-secondary d-inline p-1 me-5">
                     <label class="form-label fs-6" for="hpos_value">Horizontal Position:</label>
                     <input type="text" id="hpos_value" value="155" style="width: 50px; border: 0">
-                    <input type="range" id="horizontal_pos" min="-1280" max="2560" step="1" value="50">
+                    <input type="range" id="horizontal_pos" min="-1280" max="2560" step="1" value="155">
                 </div>
                 <div class="container border border-secondary d-inline p-1 me-5">
                     <label class="form-label fs-6" for="scale_value">Scale:</label>
@@ -143,28 +143,34 @@
             scaleInput.value = this.value;
         });
 
-        // Update container when input fields change
-        verticalInput.addEventListener("input", function () {
+        // Update container when input fields change (using 'change' to prevent mid-typing jumpiness)
+        verticalInput.addEventListener("change", function () {
             const value = parseInt(this.value, 10);
             if (!isNaN(value) && value >= parseInt(verticalSlider.min) && value <= parseInt(verticalSlider.max)) {
                 adContainer.style.top = value + "px";
                 verticalSlider.value = value;
+            } else {
+                this.value = verticalSlider.value;
             }
         });
 
-        horizontalInput.addEventListener("input", function () {
+        horizontalInput.addEventListener("change", function () {
             const value = parseInt(this.value, 10);
             if (!isNaN(value) && value >= parseInt(horizontalSlider.min) && value <= parseInt(horizontalSlider.max)) {
                 adContainer.style.left = value + "px";
                 horizontalSlider.value = value;
+            } else {
+                this.value = horizontalSlider.value;
             }
         });
 
-        scaleInput.addEventListener("input", function () {
+        scaleInput.addEventListener("change", function () {
             const value = parseFloat(this.value);
             if (!isNaN(value) && value >= parseFloat(scaleSlider.min) && value <= parseFloat(scaleSlider.max)) {
                 adContainer.style.transform = `scale(${value})`;
                 scaleSlider.value = value;
+            } else {
+                this.value = scaleSlider.value;
             }
         });
 
@@ -220,7 +226,6 @@
                 adDiv.innerHTML = "";
 
                 // Define a flexible ad slot supporting fluid size or multiple standard sizes
-                // [[300, 250], [728, 90], [300, 600], 'fluid'] allows flexibility
                 const fullAdUnitPath = `/${networkCode}/${adUnitPath}`;
                 window.gptSlot = window.googletag.defineSlot(
                     fullAdUnitPath,
@@ -235,5 +240,4 @@
         });
     </script>
 </body>
-
 </html>
