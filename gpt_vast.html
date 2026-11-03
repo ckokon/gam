@@ -178,7 +178,7 @@
                 </div>
             </div>
             <div class="col-12 col-lg-6 col-xxl-5">
-                <div class="info-text-block mt-0">
+                <div class="info-text-block text-justify mt-0">
                     <p>Google Ad Manager is a comprehensive, hosted ad management platform introduced by Google that
                         helps medium to large publishers sell, manage, and report on their digital ad inventory (such as
                         display, video, and mobile app ads).</p>
@@ -186,27 +186,29 @@
                 <div id="outstream-video-container">
                     <h2 class="fs-6 text-muted mb-1">GAM VAST Video Ad (via IMA SDK)</h2>
                     <div class="ratio ratio-16x9 video-wrapper">
-                        <video id="content_video" muted playsinline>
+                        <video id="content_video" playsinline>
                             <source src="https://storage.googleapis.com/gvmp/videos/google_io_sample.mp4"
                                 type="video/mp4">
                             <p>Your browser does not support HTML5 video.</p>
                         </video>
                         <div id="ad_container"></div>
                     </div>
-                    <button id="mute-unmute-button" class="btn btn-outline-primary mt-1 d-block mx-auto"
-                        onclick="toggleMute()">Unmute Audio</button>
-
-                    <!-- Added Text Block Below Unmute Button -->
-                    <div class="info-text-block text-start mt-2">
-                        <p><strong>Combines Two Tools:</strong> It merges an ad server and an ad exchange into a single,
-                            unified platform.
-                        </p>
-                        <p><strong>Unified Auctions:</strong> It runs on a first-price auction model, meaning the
-                            highest bidder wins the ad space.</p>
-                        <p><strong>Direct Sales & Programmatic:</strong> Publishers can manage direct ad deals with
-                            advertisers as well as programmatic sales where ad spaces are auctioned off automatically in
-                            real time.</p>
+                    <!-- Direct Ad Control Buttons -->
+                    <div class="mt-2 d-flex justify-content-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="pauseAd()">Pause
+                            Ad</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resumeAd()">Resume
+                            Ad</button>
                     </div>
+                </div>
+                <div class="info-text-block text-justify mt-2">
+                    <p><strong>Combines Two Tools:</strong> It merges an ad server and an ad exchange into a single,
+                        unified platform.</p>
+                    <p><strong>Unified Auctions:</strong> It runs on a first-price auction model, meaning the highest
+                        bidder wins the ad space.</p>
+                    <p><strong>Direct Sales & Programmatic:</strong> Publishers can manage direct ad deals with
+                        advertisers as well as programmatic sales where ad spaces are auctioned off automatically in
+                        real time.</p>
                 </div>
             </div>
             <div class="col-auto d-flex flex-column">
@@ -235,7 +237,6 @@
         var adsLoader;
         var adsManager;
         var videoContent = document.getElementById('content_video');
-        var muteButton = document.getElementById('mute-unmute-button');
         var adContainerDiv = document.getElementById('ad_container');
 
         const AD_WIDTH = 640;
@@ -273,20 +274,17 @@
             if (!adUnitPath) return;
 
             googletag.cmd.push(function () {
-                // If slot already exists, destroy it before redefining with the new path
                 if (gptSlots[slotKey]) {
                     googletag.destroySlots([gptSlots[slotKey]]);
                 }
 
-                // Define new slot using the value from the form input
                 gptSlots[slotKey] = googletag.defineSlot(adUnitPath, slotConfig.size, slotConfig.containerId)
                     .addService(googletag.pubads());
 
                 googletag.enableServices();
 
-                // If first time loading this container, call display(), otherwise refresh()
                 if (!container.dataset.loaded) {
-                    container.innerHTML = ""; // Clear placeholder text
+                    container.innerHTML = "";
                     googletag.display(slotConfig.containerId);
                     container.dataset.loaded = "true";
                 } else {
@@ -324,12 +322,10 @@
                 return;
             }
 
-            // 1. Load/Refresh all GPT Display Slots from the form inputs
             ['LEADERBOARD', 'LAYER1', 'LAYER2', 'LAYER3'].forEach(key => {
                 loadGptSlot(key);
             });
 
-            // 2. Load the IMA VAST Video Ad from the form input
             const videoTag = document.getElementById('video-url').value;
             if (adsManager) {
                 adsManager.destroy();
@@ -338,24 +334,23 @@
             initializeIMA(videoTag);
         }
 
-        // --- IMA SDK LOGIC ---
-        function toggleMute() {
-            let willBeMuted;
-            if (isAdPlaying && adsManager) {
-                const isCurrentlyMuted = adsManager.getVolume() === 0;
-                const newVolume = isCurrentlyMuted ? 1 : 0;
-                adsManager.setVolume(newVolume);
-                willBeMuted = !isCurrentlyMuted;
-                videoContent.muted = willBeMuted;
+        // --- IMA SDK AD CONTROL FUNCTIONS ---
+        function pauseAd() {
+            if (adsManager && isAdPlaying) {
+                adsManager.pause();
+                console.log("Ad paused via AdsManager.");
             } else {
-                videoContent.muted = !videoContent.muted;
-                willBeMuted = videoContent.muted;
+                console.log("No active ad playing to pause.");
             }
-            updateMuteButtonText(willBeMuted);
         }
 
-        function updateMuteButtonText(isMuted) {
-            muteButton.textContent = isMuted ? 'Unmute Audio' : 'Mute Audio';
+        function resumeAd() {
+            if (adsManager) {
+                adsManager.resume();
+                console.log("Ad resumed via AdsManager.");
+            } else {
+                console.log("No active AdsManager available to resume.");
+            }
         }
 
         function initializeIMA(adTagUrl) {
@@ -396,29 +391,27 @@
             const currentWidth = adContainerDiv.offsetWidth;
             const currentHeight = adContainerDiv.offsetHeight;
             adsManager = adsManagerLoadedEvent.getAdsManager(videoContent);
+
             adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, onAdError);
             adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_PAUSE_REQUESTED, onContentPauseRequested);
             adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED, onContentResumeRequested);
+
             adsManager.addEventListener(google.ima.AdEvent.Type.STARTED, function () {
                 isAdPlaying = true;
-                updateMuteButtonText(adsManager.getVolume() === 0);
             });
-            adsManager.addEventListener(google.ima.AdEvent.Type.ENDED, function () {
+            adsManager.addEventListener(google.ima.AdEvent.Type.COMPLETED, function () {
                 isAdPlaying = false;
-                updateMuteButtonText(videoContent.muted);
             });
-            adsManager.addEventListener(google.ima.AdEvent.Type.VOLUME_CHANGED, function (adEvent) {
-                const isMuted = adEvent.getVolume() === 0;
-                updateMuteButtonText(isMuted);
-                videoContent.muted = isMuted;
+            adsManager.addEventListener(google.ima.AdEvent.Type.ALL_ADS_COMPLETED, function () {
+                isAdPlaying = false;
             });
+
             try {
                 adsManager.init(currentWidth, currentHeight, google.ima.ViewMode.NORMAL);
                 adsManager.start();
             } catch (adError) {
                 console.error('AdsManager init error:', adError);
                 videoContent.muted = true;
-                updateMuteButtonText(true);
                 videoContent.play();
             }
         }
@@ -437,8 +430,6 @@
                 adsManager.destroy();
                 window.removeEventListener('resize', onWindowResize);
             }
-            videoContent.muted = true;
-            updateMuteButtonText(true);
             isAdPlaying = false;
             videoContent.play();
         }
